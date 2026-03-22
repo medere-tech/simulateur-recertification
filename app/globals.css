@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Aileron — custom TTF (16 graisses disponibles) */
+@font-face {
+  font-family: "Aileron";
+  src: url("/fonts/Aileron-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Aileron";
+  src: url("/fonts/Aileron-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Aileron";
+  src: url("/fonts/Aileron-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Aileron";
+  src: url("/fonts/Aileron-Light.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ── Base ───────────────────────────────────────────────────────────────────── */
+
+@layer base {
+  html {
+    font-family: "Aileron", system-ui, -apple-system, sans-serif;
+    color: #302D2D;
+    background-color: #F9F5F2;
+    overflow-x: hidden; /* jamais de scroll horizontal */
+  }
+
+  body {
+    overflow-x: hidden;
+  }
+
+  /* Touch targets minimum 44px (WCAG 2.5.5) */
+  button, a {
+    min-height: 44px;
+  }
+}
