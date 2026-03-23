@@ -170,16 +170,12 @@ function getLogoBase64(): string {
 
 // ─── Helpers ─────────────────────────────────────────────────────────
 function getDeadlineYear(data: ReportData): number {
-  const prof = PROFESSIONS[data.profession];
-  if (!prof) return 2029;
-  if (data.diplomaYear === 'apres_2023') {
-    return 2023 + prof.cycleDuration;
+  // MG et CD diplômés AVANT 2023 → cycle 9 ans → 2032
+  // Toutes les autres combinaisons → 2028
+  if ((data.profession === 'MG' || data.profession === 'CD') && data.diplomaYear !== 'apres_2023') {
+    return 2032;
   }
-  if (data.diplomaYear === 'avant_2000' || data.diplomaYear === '2000_2010' || data.diplomaYear === '2011_2022') {
-    if (data.profession === 'MG' || data.profession === 'CD') return 2032;
-    return 2029;
-  }
-  return 2029;
+  return 2028;
 }
 
 function getStatusLabel(status: string): string {

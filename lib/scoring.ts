@@ -36,16 +36,12 @@ function toStatus(score: number, max: number): DimensionStatus {
 }
 
 function getEcheance(profession: ProfessionId, diplomaYear: DiplomaYear): number {
-  if (diplomaYear === "apres_2023") {
-    // Diplômé après 2023 : cycle 6 ans à partir de l'année d'obtention
-    // On prend 2024 comme valeur centrale pour la tranche "après 2023"
-    return 2024 + 6; // 2030
+  // MG et CD diplômés AVANT 2023 → cycle 9 ans → 2032
+  // Toutes les autres combinaisons → 2028
+  if ((profession === "MG" || profession === "CD") && diplomaYear !== "apres_2023") {
+    return 2032;
   }
-  // Diplômé avant 01/01/2023 : le cycle part du 01/01/2023 (début de l'obligation)
-  // MG et CD : cycle 9 ans → 2023 + 9 = 2032
-  // Tous les autres (GO, PED, PSY, AUTRE…) : cycle 6 ans → 2023 + 6 = 2029
-  const hasCycle9 = profession === "MG" || profession === "CD";
-  return hasCycle9 ? 2032 : 2029;
+  return 2028;
 }
 
 export function calculateScore(

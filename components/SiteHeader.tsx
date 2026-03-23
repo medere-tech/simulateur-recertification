@@ -26,9 +26,9 @@ export default function SiteHeader() {
     >
       <Image
         src="/images/logo-medere-black.png"
-        alt="Médéré"
-        height={44}
-        width={165}
+        alt="Logo Médéré"
+        height={26}
+        width={132}
         priority
         className="h-7 sm:h-9 lg:h-11"
         style={{ width: "auto" }}

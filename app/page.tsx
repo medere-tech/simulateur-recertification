@@ -50,7 +50,7 @@ export default function Home() {
 
               {/* H1 */}
               <h1 className="animate-hero-in text-center text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-left lg:text-6xl">
-                <span className="block text-[#302D2D]">Votre diagnostic certification</span>
+                <span className="block text-[#302D2D]">Votre diagnostic de certification</span>
                 <span className="block text-[#006E90]">en 2&nbsp;minutes</span>
               </h1>
 
@@ -59,9 +59,9 @@ export default function Home() {
                 className="animate-hero-in mt-5 text-center text-lg leading-relaxed text-[#686162] lg:text-left"
                 style={{ animationDelay: "100ms" }}
               >
-                Répondez à 4&nbsp;questions simples. Découvrez où vous en êtes dans
+                Professionnels de santé, répondez à 4&nbsp;questions simples. Découvrez où vous en êtes dans
                 votre parcours de certification périodique et ce qu&apos;il vous
-                reste à faire.
+                reste à faire avant le prochain contrôle de votre CNP.
               </p>
 
               {/* Stepper horizontal - mobile uniquement */}
