@@ -1,6 +1,6 @@
 "use client";
 
-// Bouton CTA principal — Écran 1
+// Bouton CTA principal - Écran 1
 // Prefetch /simulateur au mount pour une navigation instantanée
 
 import { useEffect } from "react";

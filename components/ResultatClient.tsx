@@ -1,6 +1,6 @@
 "use client";
 
-// Écran 6 — Résultat gratuit
+// Écran 6 - Résultat gratuit
 // Client component : lit les URL params, calcule le score, fire GA4
 
 import Link from "next/link";

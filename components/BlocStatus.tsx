@@ -1,4 +1,4 @@
-// Indicateur par bloc/axe — statut, score, mention "Nouveau" pour blocs 3 & 4
+// Indicateur par bloc/axe - statut, score, mention "Nouveau" pour blocs 3 & 4
 // animDelay : délai en ms pour l'apparition en cascade (staggered)
 
 import type { DimensionStatus } from "@/lib/scoring";
@@ -46,7 +46,7 @@ type BlocStatusProps = {
   score: number;
   status: DimensionStatus;
   isNew?: boolean;
-  animDelay?: number; // millisecondes — pour l'animation en cascade
+  animDelay?: number; // millisecondes - pour l'animation en cascade
 };
 
 export default function BlocStatus({
@@ -77,11 +77,11 @@ export default function BlocStatus({
       {/* Contenu texte */}
       <div className="min-w-0 flex-1">
         <p className="text-sm font-semibold leading-snug text-[#302D2D]">
-          {dimensionLabel}&nbsp;{index}&nbsp;—&nbsp;{name}
+          {dimensionLabel}&nbsp;{index}&nbsp;-&nbsp;{name}
         </p>
         <p className="mt-0.5 text-xs text-[#686162]">
           {isNew
-            ? "Nouveau — créé par la certification périodique"
+            ? "Nouveau - créé par la certification périodique"
             : cfg.label}
         </p>
       </div>

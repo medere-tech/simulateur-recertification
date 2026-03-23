@@ -1,4 +1,4 @@
-// Écrans 7 & 8 — Plan d'action + Confirmation
+// Écrans 7 & 8 - Plan d'action + Confirmation
 // Suspense nécessaire car PlanActionClient utilise useSearchParams
 
 import { Suspense } from "react";

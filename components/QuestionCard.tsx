@@ -1,7 +1,7 @@
 "use client";
 
-// QuestionCard — rendu liste (étapes 2-4) ou grille (étape profession)
-// ProfessionGrid — grille 2 cols mobile / 3 cols desktop avec couleur spécialité
+// QuestionCard - rendu liste (étapes 2-4) ou grille (étape profession)
+// ProfessionGrid - grille 2 cols mobile / 3 cols desktop avec couleur spécialité
 
 import { useState } from "react";
 import Image from "next/image";
@@ -23,7 +23,7 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-// ─── ProfessionCard — carte verticale pour la grille étape 1 ─────────────────
+// ─── ProfessionCard - carte verticale pour la grille étape 1 ─────────────────
 
 type ProfessionCardProps = {
   choice: Choice;
@@ -71,7 +71,7 @@ function ProfessionCard({ choice, onSelect }: ProfessionCardProps) {
   );
 }
 
-// ─── ProfessionGrid — grille 2 cols mobile / 3 cols desktop ──────────────────
+// ─── ProfessionGrid - grille 2 cols mobile / 3 cols desktop ──────────────────
 
 type ProfessionGridProps = {
   question: React.ReactNode;
@@ -109,7 +109,7 @@ export function ProfessionGrid({
   );
 }
 
-// ─── ChoiceButton — bouton liste pour étapes 2-4 ─────────────────────────────
+// ─── ChoiceButton - bouton liste pour étapes 2-4 ─────────────────────────────
 
 type ChoiceButtonProps = {
   choice: Choice;
@@ -159,7 +159,7 @@ function ChoiceButton({ choice, onSelect, accentColor }: ChoiceButtonProps) {
   );
 }
 
-// ─── QuestionCard — liste standard (étapes 2-4) ───────────────────────────────
+// ─── QuestionCard - liste standard (étapes 2-4) ───────────────────────────────
 
 type QuestionCardProps = {
   question: React.ReactNode;

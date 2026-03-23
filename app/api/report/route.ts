@@ -1,4 +1,4 @@
-// POST /api/report — Génération PDF personnalisé
+// POST /api/report - Génération PDF personnalisé
 // Retourne le PDF en base64 pour téléchargement côté client
 // L'envoi HubSpot email sera implémenté dans une prochaine étape
 
@@ -67,6 +67,9 @@ export async function POST(req: NextRequest) {
     const pdfBuffer = await generateReport({
       profession: body.profession,
       diplomaYear: body.diplomaYear,
+      dpcFormations: body.dpcFormations ?? "",
+      awareness: body.awareness ?? "",
+      email: body.email ?? "",
       score: body.score,
       urgency: body.urgency,
       bloc1Status: body.bloc1Status,

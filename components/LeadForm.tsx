@@ -1,6 +1,6 @@
 "use client";
 
-// Formulaire de capture email — Écran 7
+// Formulaire de capture email - Écran 7
 // Validation live (onBlur + live après premier blur), blacklist domaines perso
 
 import { useState } from "react";
@@ -166,8 +166,8 @@ export default function LeadForm({
       fetch("/api/report", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, profession, diplomaYear, dpcFormations, score }),
-      }).catch(() => {/* silencieux — génération PDF non bloquante */});
+        body: JSON.stringify({ email, profession, diplomaYear, dpcFormations, awareness, score, urgency, bloc1Status, bloc2Status }),
+      }).catch(() => {/* silencieux - génération PDF non bloquante */});
 
       // ── 4. Redirect vers confirmation ───────────────────────────────────────
       const sp = new URLSearchParams(planParams);
@@ -235,7 +235,7 @@ export default function LeadForm({
           </p>
         ) : (
           <p className="mt-1.5 text-xs text-[#807778]">
-            Pour un accompagnement personnalisé par un conseiller Médéré — optionnel
+            Pour un accompagnement personnalisé par un conseiller Médéré - optionnel
           </p>
         )}
       </div>

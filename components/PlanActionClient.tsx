@@ -1,6 +1,6 @@
 "use client";
 
-// Écrans 7 & 8 — Plan d'action (capture email) + Confirmation
+// Écrans 7 & 8 - Plan d'action (capture email) + Confirmation
 // Lit les params URL, calcule le score, affiche le bon écran
 
 import { useEffect, useState } from "react";
@@ -110,7 +110,7 @@ export default function PlanActionClient() {
   );
 }
 
-// ─── Écran 7 — Formulaire ─────────────────────────────────────────────────────
+// ─── Écran 7 - Formulaire ─────────────────────────────────────────────────────
 
 // Trick TS : PROFESSIONS values type
 type ProfConfig = (typeof PROFESSIONS)[ProfessionId];
@@ -206,7 +206,7 @@ function Ecran7({
   );
 }
 
-// ─── Écran 8 — Confirmation ───────────────────────────────────────────────────
+// ─── Écran 8 - Confirmation ───────────────────────────────────────────────────
 
 function Ecran8({
   profConfig,

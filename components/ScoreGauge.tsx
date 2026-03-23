@@ -1,6 +1,6 @@
 "use client";
 
-// Jauge semi-circulaire animée — stroke-dashoffset reveal en 800ms ease-out
+// Jauge semi-circulaire animée - stroke-dashoffset reveal en 800ms ease-out
 // Technique : arc complet en fond + overlay coloré masqué par stroke-dashoffset
 
 import { useState, useEffect } from "react";
@@ -13,17 +13,17 @@ export const URGENCY_CONFIG: Record<
   rouge: {
     color: "#CC0000",
     bgLight: "#FEF2F2",
-    label: "Situation critique — actions urgentes nécessaires",
+    label: "Situation critique - actions urgentes nécessaires",
   },
   orange: {
     color: "#EA6C00",
     bgLight: "#FFF7ED",
-    label: "En cours — des actions restent à réaliser",
+    label: "En cours - des actions restent à réaliser",
   },
   vert: {
     color: "#2DA131",
     bgLight: "#F0FDF4",
-    label: "Bien avancé — quelques ajustements",
+    label: "Bien avancé - quelques ajustements",
   },
 };
 
@@ -60,7 +60,7 @@ export default function ScoreGauge({ score, maxScore, urgency }: ScoreGaugeProps
       {/* SVG gauge */}
       <div className="w-52 sm:w-60" aria-hidden="true">
         <svg viewBox="0 0 200 115" className="w-full">
-          {/* Fond neutre — arc complet statique */}
+          {/* Fond neutre - arc complet statique */}
           <path
             d={arcPath}
             fill="none"
@@ -69,7 +69,7 @@ export default function ScoreGauge({ score, maxScore, urgency }: ScoreGaugeProps
             strokeLinecap="round"
           />
 
-          {/* Remplissage animé — même arc, stroke-dashoffset contrôle la longueur */}
+          {/* Remplissage animé - même arc, stroke-dashoffset contrôle la longueur */}
           <path
             d={arcPath}
             fill="none"
@@ -81,7 +81,7 @@ export default function ScoreGauge({ score, maxScore, urgency }: ScoreGaugeProps
             style={{ transition: "stroke-dashoffset 800ms ease-out" }}
           />
 
-          {/* Score — fade-in avec l'arc */}
+          {/* Score - fade-in avec l'arc */}
           <text
             x="100"
             y="86"

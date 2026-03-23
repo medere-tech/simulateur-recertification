@@ -1,5 +1,5 @@
-// Configuration par profession — terminologie, couleurs, limites, contraintes
-// Source : specs-techniques.md + arrêté du 26 février 2026 — NOR : SFHH2605575A
+// Configuration par profession - terminologie, couleurs, limites, contraintes
+// Source : specs-techniques.md + arrêté du 26 février 2026 - NOR : SFHH2605575A
 
 export type ProfessionId = "MG" | "CD" | "GO" | "PED" | "PSY" | "AUTRE";
 
@@ -43,7 +43,7 @@ export const PROFESSIONS: Record<ProfessionId, ProfessionConfig> = {
     cycle: "6 ans (9 ans si diplômé avant 01/01/2023)",
     actionsMin: 8,
     actionsParDimension: 2,
-    cnp: "CMG — Collège de la Médecine Générale",
+    cnp: "CMG - Collège de la Médecine Générale",
     constraints: {
       durationMin: null,
       excludedPractices: true, // 18 pratiques exclues (homéo, ostéo…)
@@ -90,7 +90,7 @@ export const PROFESSIONS: Record<ProfessionId, ProfessionConfig> = {
     cycle: "6 ans",
     actionsMin: 8,
     actionsParDimension: 2,
-    cnp: "CNP GO-GM — accréditation via GYNERISQ",
+    cnp: "CNP GO-GM - accréditation via GYNERISQ",
     constraints: {
       durationMin: null,
       excludedPractices: false,

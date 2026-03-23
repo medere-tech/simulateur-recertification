@@ -1,4 +1,4 @@
-// Client API HubSpot v3 — upsert contact + propriétés custom certification
+// Client API HubSpot v3 - upsert contact + propriétés custom certification
 // Clé API : process.env.HUBSPOT_API_KEY
 
 const HUBSPOT_API = "https://api.hubapi.com/crm/v3/objects/contacts";

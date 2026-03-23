@@ -1,4 +1,4 @@
-// Icônes SVG inline — stroke-based, 24×24 viewBox
+// Icônes SVG inline - stroke-based, 24×24 viewBox
 // Props: size (défaut 24), className
 
 type IconProps = {

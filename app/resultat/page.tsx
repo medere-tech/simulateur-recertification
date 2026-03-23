@@ -1,5 +1,5 @@
-// Écran 6 — Résultat gratuit
-// Wrapper Server Component — ResultatClient gère state + scoring via URL params
+// Écran 6 - Résultat gratuit
+// Wrapper Server Component - ResultatClient gère state + scoring via URL params
 
 import { Suspense } from "react";
 import ResultatClient from "@/components/ResultatClient";

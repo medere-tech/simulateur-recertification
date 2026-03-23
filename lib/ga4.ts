@@ -1,4 +1,4 @@
-// Helper events GA4 — Propriété G-4QX8DR7DPS
+// Helper events GA4 - Propriété G-4QX8DR7DPS
 // Source : specs-techniques.md
 
 declare global {

@@ -1,4 +1,4 @@
-// Footer premium — commun à toutes les pages via layout.tsx
+// Footer premium - commun à toutes les pages via layout.tsx
 // Desktop : bande horizontale compacte (3 zones)
 // Mobile : empilé centré, discret
 
@@ -16,7 +16,7 @@ export default function SiteFooter() {
         {/* DESKTOP : 3 zones horizontales */}
         <div className="hidden lg:flex lg:items-center lg:justify-between">
 
-          {/* Zone gauche — Logo + DPC */}
+          {/* Zone gauche - Logo + DPC */}
           <div className="flex items-center gap-3">
             <Image
               src="/images/logo-medere-white.png"
@@ -30,7 +30,7 @@ export default function SiteFooter() {
             <span className="text-xs text-[#807778]">DPC n°9262</span>
           </div>
 
-          {/* Zone centre — Coordonnées */}
+          {/* Zone centre - Coordonnées */}
           <div className="flex items-center gap-4 text-xs text-[#9C9494]">
             <Link
               href="tel:+33188339528"
@@ -49,7 +49,7 @@ export default function SiteFooter() {
             </Link>
           </div>
 
-          {/* Zone droite — Qualiopi + Fondateur */}
+          {/* Zone droite - Qualiopi + Fondateur */}
           <div className="flex items-center gap-3">
             <Image
               src="/images/badge-qualiopi.png"
@@ -118,7 +118,7 @@ export default function SiteFooter() {
       <div className="border-t border-[#3F3B3C] px-5 py-2 sm:px-8">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-x-2 gap-y-1">
           <span className="text-[10px] text-[#686162]">
-            Basé sur l&apos;arrêté du 26&nbsp;février&nbsp;2026 — NOR&nbsp;: SFHH2605575A
+            Basé sur l&apos;arrêté du 26&nbsp;février&nbsp;2026 - NOR&nbsp;: SFHH2605575A
           </span>
           <span className="text-[#494343]" aria-hidden="true">·</span>
           <Link

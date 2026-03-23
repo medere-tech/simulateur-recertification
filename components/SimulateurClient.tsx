@@ -1,6 +1,6 @@
 "use client";
 
-// State machine du simulateur — Écrans 2 à 5
+// State machine du simulateur - Écrans 2 à 5
 // Navigation : URL params portent tout l'état (shareable, browser back fonctionnel)
 // Couleur d'accent : dynamique selon la profession dès l'étape 2
 
@@ -131,11 +131,11 @@ export default function SimulateurClient() {
         <ProgressBar currentStep={step} totalSteps={4} accentColor={accentColor} />
       </div>
 
-      {/* ── Contenu — key={step} déclenche le fade-in à chaque changement ─── */}
+      {/* ── Contenu - key={step} déclenche le fade-in à chaque changement ─── */}
       <main className="flex flex-1 flex-col items-center px-4 py-8 sm:px-6">
         <div key={step} className="w-full max-w-lg animate-fade-in">
 
-          {/* Bouton retour — step 1 : retour accueil, step 2+ : retour navigateur */}
+          {/* Bouton retour - step 1 : retour accueil, step 2+ : retour navigateur */}
           {step === 1 ? (
             <button
               onClick={() => router.push("/")}
@@ -152,7 +152,7 @@ export default function SimulateurClient() {
             </button>
           )}
 
-          {/* Étape 1 — Profession (grille) */}
+          {/* Étape 1 - Profession (grille) */}
           {step === 1 && (
             <ProfessionGrid
               question="Quelle est votre profession ?"
@@ -162,7 +162,7 @@ export default function SimulateurClient() {
             />
           )}
 
-          {/* Étape 2 — Année de diplôme */}
+          {/* Étape 2 - Année de diplôme */}
           {step === 2 && (
             <QuestionCard
               question="En quelle année avez-vous obtenu votre diplôme ?"
@@ -173,7 +173,7 @@ export default function SimulateurClient() {
             />
           )}
 
-          {/* Étape 3 — Formations DPC */}
+          {/* Étape 3 - Formations DPC */}
           {step === 3 && (
             <QuestionCard
               question="Avez-vous suivi des formations DPC ces 3 dernières années ?"
@@ -183,7 +183,7 @@ export default function SimulateurClient() {
             />
           )}
 
-          {/* Étape 4 — Connaissance des blocs/axes */}
+          {/* Étape 4 - Connaissance des blocs/axes */}
           {step === 4 && (
             <QuestionCard
               question={awarenessQuestion}

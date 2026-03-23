@@ -1,5 +1,5 @@
-// Écran 1 — Accroche premium
-// Server Component (LCP optimal) — seul le bouton CTA est client
+// Écran 1 - Accroche premium
+// Server Component (LCP optimal) - seul le bouton CTA est client
 
 import { Suspense } from "react";
 import CTAButton from "@/components/CTAButton";
@@ -30,7 +30,7 @@ export default function Home() {
       {/* ── Header sticky ───────────────────────────────────────────── */}
       <SiteHeader />
 
-      {/* ── Hero — min-h-screen desktop pour tout tenir dans le viewport */}
+      {/* ── Hero - min-h-screen desktop pour tout tenir dans le viewport */}
       <section className="flex flex-1 items-center px-5 py-14 sm:px-8 sm:py-16 lg:min-h-screen">
         <div className="mx-auto w-full max-w-5xl">
 
@@ -44,7 +44,7 @@ export default function Home() {
               <div className="mb-6 flex justify-center lg:justify-start">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E8F4F8] px-4 py-1.5 text-xs font-semibold text-[#006E90]">
                   <DocumentIcon size={13} />
-                  Arrêté du 26&nbsp;février&nbsp;2026 — Référentiel officiel
+                  Arrêté du 26&nbsp;février&nbsp;2026 - Référentiel officiel
                 </span>
               </div>
 
@@ -60,11 +60,11 @@ export default function Home() {
                 style={{ animationDelay: "100ms" }}
               >
                 Répondez à 4&nbsp;questions simples. Découvrez où vous en êtes dans
-                votre parcours de certification périodique&nbsp;— et ce qu&apos;il vous
+                votre parcours de certification périodique et ce qu&apos;il vous
                 reste à faire.
               </p>
 
-              {/* Stepper horizontal — mobile uniquement */}
+              {/* Stepper horizontal - mobile uniquement */}
               <div className="mt-8 lg:hidden">
                 <StepperHorizontal />
               </div>
@@ -102,7 +102,7 @@ export default function Home() {
 
             </div>
 
-            {/* ── Colonne droite (2/5) — stepper vertical desktop ───── */}
+            {/* ── Colonne droite (2/5) - stepper vertical desktop ───── */}
             <div className="hidden lg:col-span-2 lg:flex lg:flex-col lg:justify-center">
               <StepperVertical />
             </div>
@@ -111,7 +111,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Urgence — mobile uniquement ─────────────────────────────── */}
+      {/* ── Urgence - mobile uniquement ─────────────────────────────── */}
       <section className="px-5 pb-6 lg:hidden sm:px-8">
         <div className="mx-auto max-w-xl">
           <UrgenceBox />

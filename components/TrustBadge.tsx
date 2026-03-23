@@ -1,4 +1,4 @@
-// Badge de confiance — "Organisme certifié DPC • Qualiopi"
+// Badge de confiance - "Organisme certifié DPC • Qualiopi"
 // Responsive : label court sur mobile, label complet sur sm+
 
 type TrustBadgeProps = {

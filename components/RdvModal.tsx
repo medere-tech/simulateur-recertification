@@ -1,6 +1,6 @@
 "use client";
 
-// Modal RDV — iframe HubSpot meetings
+// Modal RDV - iframe HubSpot meetings
 // Mobile : sheet plein écran depuis le bas
 // Desktop : modal centré max-w-lg
 // Escape + clic overlay pour fermer, focus sur bouton close à l'ouverture
@@ -49,7 +49,7 @@ export default function RdvModal({ isOpen, onClose }: Props) {
       onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
       aria-hidden="false"
     >
-      {/* Modal — overflow:hidden strict, pas de scroll interne */}
+      {/* Modal - overflow:hidden strict, pas de scroll interne */}
       <div
         role="dialog"
         aria-modal="true"
@@ -87,7 +87,7 @@ export default function RdvModal({ isOpen, onClose }: Props) {
           </button>
         </div>
 
-        {/* iframe — remplit exactement l'espace restant, pas de scrollbar */}
+        {/* iframe - remplit exactement l'espace restant, pas de scrollbar */}
         <iframe
           src={CONFIG.HUBSPOT_MEETING_URL}
           title="Prendre rendez-vous avec Médéré"

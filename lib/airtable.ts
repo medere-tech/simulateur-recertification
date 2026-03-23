@@ -1,4 +1,4 @@
-// Client Airtable — catalogue des formations Médéré
+// Client Airtable - catalogue des formations Médéré
 // Base : app3GnMOzJn7VHMji
 // Médéré ne vend PAS les blocs/axes 3 & 4 → filtre strict
 
@@ -10,7 +10,7 @@ const BASE_ID    = "app3GnMOzJn7VHMji";
 const TABLE_FORMATIONS = "tblu6nfUIhTQ1cbgk";
 const TABLE_SESSIONS   = "tblGVEqH7KCo2GlXz";
 
-// Field IDs (pour le paramètre "fields[]" — sélection des colonnes)
+// Field IDs (pour le paramètre "fields[]" - sélection des colonnes)
 const FIELD_IDS = {
   titre:          "fldo62rbDD2trd7Jg",
   duree:          "fldSNZuA8JL91b3wA",
@@ -25,7 +25,7 @@ const FIELD_IDS = {
   numeroDPC:      "fldpQPNVftoz4y8Ws",
 } as const;
 
-// Noms de colonnes lisibles (pour filterByFormula — la syntaxe Airtable l'exige)
+// Noms de colonnes lisibles (pour filterByFormula - la syntaxe Airtable l'exige)
 const COL = {
   professions: "Public concerné",
   blocAxe:     "Bloc/Axe certification",
@@ -115,7 +115,7 @@ function parseRecord(record: AirtableRecord): Formation {
   };
 }
 
-// Paramètre fields[] — ne récupérer que les colonnes utiles
+// Paramètre fields[] - ne récupérer que les colonnes utiles
 const FIELDS_PARAM = Object.values(FIELD_IDS)
   .filter((id) => id !== FIELD_IDS.sessions) // les sessions sont dans une autre table
   .map((id) => `fields[]=${id}`)
@@ -132,7 +132,7 @@ async function fetchFormations(filterFormula: string): Promise<Formation[]> {
   let allRecords: AirtableRecord[] = [];
   let offset: string | undefined;
 
-  // Airtable pagine à 100 enregistrements — boucle sur les pages
+  // Airtable pagine à 100 enregistrements - boucle sur les pages
   do {
     const pageUrl = offset ? `${url}&offset=${offset}` : url;
     const res = await fetch(pageUrl, {
@@ -156,7 +156,7 @@ async function fetchFormations(filterFormula: string): Promise<Formation[]> {
 // ─── API publique ─────────────────────────────────────────────────────────────
 
 /**
- * Formations éligibles pour une profession — blocs/axes 1 & 2 uniquement,
+ * Formations éligibles pour une profession - blocs/axes 1 & 2 uniquement,
  * statut "Active". Retourne [] si Airtable non configuré.
  */
 export async function getFormationsByProfession(professionId: string): Promise<Formation[]> {
@@ -173,7 +173,7 @@ export async function getFormationsByProfession(professionId: string): Promise<F
 }
 
 /**
- * Tout le catalogue actif — blocs 1 & 2 uniquement.
+ * Tout le catalogue actif - blocs 1 & 2 uniquement.
  * Utile pour un éventuel cache global ou pré-chargement PDF.
  */
 export async function getAllFormations(): Promise<Formation[]> {

@@ -6,7 +6,7 @@ import "./globals.css";
 const GA_ID = "G-4QX8DR7DPS";
 
 export const metadata: Metadata = {
-  title: "Simulateur de certification périodique — Médéré",
+  title: "Simulateur de certification périodique - Médéré",
   description:
     "Évaluez votre avancement dans la certification périodique en 2 minutes. Gratuit, sans inscription.",
   metadataBase: new URL("https://simulateurdpc.fr"),
@@ -23,7 +23,7 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <head>
-        {/* Preload polices critiques — Regular + SemiBold (LCP) */}
+        {/* Preload polices critiques - Regular + SemiBold (LCP) */}
         <link
           rel="preload"
           href="/fonts/Aileron-Regular.ttf"
@@ -41,7 +41,7 @@ export default function RootLayout({
         {children}
         <SiteFooter />
 
-        {/* Google Analytics 4 — afterInteractive pour ne pas bloquer LCP */}
+        {/* Google Analytics 4 - afterInteractive pour ne pas bloquer LCP */}
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
           strategy="afterInteractive"

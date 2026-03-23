@@ -1,5 +1,5 @@
-// Écrans 2-5 — Le simulateur (state machine 4 étapes)
-// Server Component wrapper — SimulateurClient gère tout le state via URL params
+// Écrans 2-5 - Le simulateur (state machine 4 étapes)
+// Server Component wrapper - SimulateurClient gère tout le state via URL params
 
 import { Suspense } from "react";
 import SimulateurClient from "@/components/SimulateurClient";

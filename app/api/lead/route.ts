@@ -1,4 +1,4 @@
-// POST /api/lead — Créer ou mettre à jour un contact HubSpot
+// POST /api/lead - Créer ou mettre à jour un contact HubSpot
 // Rate limit : 10 req/min/IP · Validation serveur email + domaine perso
 
 import { NextRequest, NextResponse } from "next/server";

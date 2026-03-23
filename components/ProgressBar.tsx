@@ -1,4 +1,4 @@
-// Barre de progression — Étape X sur 4
+// Barre de progression - Étape X sur 4
 // Segments colorés en accent de la profession
 
 type ProgressBarProps = {
