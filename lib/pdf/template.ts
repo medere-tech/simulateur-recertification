@@ -131,9 +131,10 @@ const URGENCY_CONFIG: Record<string, { label: string; color: string; bgLight: st
   vert: { label: 'Bien avancé', color: '#2DA131', bgLight: '#F0FFF0' },
 };
 
-// ─── Font & Logo Loading ─────────────────────────────────────────────
+// ─── Asset Loading ────────────────────────────────────────────────────
 let _fontCache: Record<string, string> = {};
 let _logoCache: string = '';
+let _templateCache: Record<string, string> = {};
 
 function getFontBase64(filename: string): string {
   if (_fontCache[filename]) return _fontCache[filename];
@@ -141,6 +142,29 @@ function getFontBase64(filename: string): string {
     const fontPath = path.join(process.cwd(), 'public', 'fonts', filename);
     _fontCache[filename] = fs.readFileSync(fontPath).toString('base64');
     return _fontCache[filename];
+  } catch {
+    return '';
+  }
+}
+
+function cleanSvgTemplate(svg: string): string {
+  // Supprimer les groupes avec filtre (texte avec ombre portée)
+  svg = svg.replace(/<g filter="url\(#[^"]*\)"[^>]*>[\s\S]*?<\/g>/g, '');
+  // Supprimer tous les éléments <text>
+  svg = svg.replace(/<text[^>]*>[\s\S]*?<\/text>/g, '');
+  // Supprimer les <tspan> orphelins
+  svg = svg.replace(/<tspan[^>]*>[\s\S]*?<\/tspan>/g, '');
+  return svg;
+}
+
+function getTemplateSrc(filename: string): string {
+  if (_templateCache[filename]) return _templateCache[filename];
+  try {
+    const svgPath = path.join(process.cwd(), 'templates', filename);
+    const raw = fs.readFileSync(svgPath, 'utf-8');
+    const cleaned = cleanSvgTemplate(raw);
+    _templateCache[filename] = 'data:image/svg+xml;base64,' + Buffer.from(cleaned).toString('base64');
+    return _templateCache[filename];
   } catch {
     return '';
   }
@@ -221,6 +245,13 @@ export function getReportHTML(data: ReportData): string {
   const fontBold = getFontBase64('Aileron-Bold.ttf');
   const logo = getLogoBase64();
 
+  // Template SVG backgrounds
+  const svgCover     = getTemplateSrc('page-garde-rapport.svg');
+  const svgPageH2    = getTemplateSrc('page-avec-H2.svg');
+  const svgPageNormal = getTemplateSrc('page-normal-rapport.svg');
+  const svgTableau   = getTemplateSrc('tableau-rapport.svg');
+  const svgBanniere  = getTemplateSrc('banniere-cta-vers-catalogue-rapport.svg');
+
   // Bloc statuses
   const blocs = [
     { num: 1, name: prof.dimensions[0].name, status: getStatusLabel(data.bloc1Status), statusColor: getStatusColor(data.bloc1Status), score: getScore(data.bloc1Status), covered: true },
@@ -240,32 +271,42 @@ export function getReportHTML(data: ReportData): string {
   @font-face { font-family:'Aileron'; font-weight:700; src:url(data:font/truetype;base64,${fontBold}) format('truetype'); }
 
   *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
-  
+
   @page { size:A4; margin:0; }
-  
-  body { 
-    font-family:'Aileron', 'Helvetica Neue', Arial, sans-serif; 
-    color:#302D2D; 
+
+  body {
+    font-family:'Aileron', 'Helvetica Neue', Arial, sans-serif;
+    color:#302D2D;
     -webkit-print-color-adjust:exact;
     print-color-adjust:exact;
   }
 
+  /* ── Page ── */
   .page {
-    width:210mm; 
-    height:297mm; 
-    position:relative; 
+    width:210mm;
+    height:297mm;
+    position:relative;
     overflow:hidden;
     background:#F9F5F2;
     page-break-after:always;
   }
   .page:last-child { page-break-after:auto; }
 
-  /* ── Page inner padding (not on cover) ── */
+  .page-bg {
+    position:absolute;
+    top:0; left:0;
+    width:100%; height:100%;
+    object-fit:cover;
+    z-index:0;
+  }
+
   .page-inner {
-    padding: 36px 48px 60px 48px;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+    position:relative;
+    z-index:1;
+    padding:36px 48px 60px 48px;
+    height:100%;
+    display:flex;
+    flex-direction:column;
   }
 
   /* ── Header ── */
@@ -274,9 +315,9 @@ export function getReportHTML(data: ReportData): string {
     justify-content:space-between;
     align-items:center;
     padding-bottom:12px;
-    border-bottom:1px solid #DBD6CD;
+    border-bottom:1px solid rgba(219,214,205,0.6);
     margin-bottom:28px;
-    flex-shrink: 0;
+    flex-shrink:0;
   }
   .page-header img { height:22px; width:auto; }
   .page-header .page-num { font-size:9px; font-weight:300; color:#9C9494; }
@@ -287,45 +328,74 @@ export function getReportHTML(data: ReportData): string {
     bottom:24px;
     left:48px;
     right:48px;
-    border-top:0.5px solid #DBD6CD;
+    border-top:0.5px solid rgba(219,214,205,0.6);
     padding-top:8px;
     text-align:center;
     font-size:7px;
     font-weight:300;
     color:#9C9494;
+    z-index:1;
   }
 
-  /* ── Titles ── */
+  /* ── Typography ── */
   h1 { font-size:26px; font-weight:700; color:#302D2D; line-height:1.2; margin-bottom:8px; }
   h2 { font-size:18px; font-weight:700; color:#302D2D; line-height:1.3; margin-bottom:16px; }
   h3 { font-size:13px; font-weight:600; color:#494343; margin-bottom:6px; }
   p, .body-text { font-size:10.5px; font-weight:400; color:#554F4F; line-height:1.6; }
 
-  /* ── Info Box (left bar only, NO other borders) ── */
+  /* ── Info Box — CSS pur ── */
   .info-box {
-    padding:14px 18px 14px 18px;
+    width:100%;
     margin:12px 0;
-    border-left:1px solid #006E90;
-    background:#F0EAE5;
+    border-radius:12px;
+    padding:16px 20px;
   }
-  .info-box h3 { margin-bottom:4px; font-size:11.5px; }
-  .info-box p { font-size:10px; color:#686162; }
-  .info-box.warning { border-left-color:#EA6C00; }
-  .info-box.danger { border-left-color:#CC0000; background:#FBEAEA; }
-  .info-box.success { border-left-color:#2DA131; }
+  .info-box.urgence {
+    background:#FDF8F3;
+    border:1.5px solid #DBD6CD;
+  }
+  .info-box.urgence::before {
+    content:'BON À SAVOIR';
+    display:block;
+    font-size:8px;
+    font-weight:700;
+    letter-spacing:1.5px;
+    color:#9C9494;
+    text-transform:uppercase;
+    margin-bottom:8px;
+  }
+  .info-box.urgence h3 { font-size:11.5px; color:#302D2D; margin-bottom:6px; }
+  .info-box.urgence p { font-size:10px; color:#686162; }
+  .info-box.resume {
+    background:#006E90;
+  }
+  .info-box.resume h3 { color:#FFFFFF; font-size:11.5px; margin-bottom:6px; }
+  .info-box.resume p { color:rgba(255,255,255,0.88); font-size:10px; }
 
-  /* ── Tables ── */
+  /* ── Table with SVG background ── */
+  .table-wrapper {
+    position:relative;
+    margin:16px 0;
+    border-radius:16px;
+    overflow:hidden;
+  }
+  .table-bg {
+    position:absolute;
+    top:0; left:0;
+    width:100%; height:100%;
+    object-fit:fill;
+    z-index:0;
+  }
   .data-table {
+    position:relative;
+    z-index:1;
     width:100%;
     border-collapse:separate;
     border-spacing:0;
-    border:1px solid #DBD6CD;
-    border-radius:8px;
-    overflow:hidden;
-    margin:16px 0;
+    background:transparent;
   }
   .data-table thead th {
-    background:#F0EAE5;
+    background:rgba(240,234,229,0.85);
     font-size:9px;
     font-weight:600;
     color:#494343;
@@ -333,14 +403,15 @@ export function getReportHTML(data: ReportData): string {
     letter-spacing:0.5px;
     padding:10px 16px;
     text-align:left;
-    border-bottom:1px solid #DBD6CD;
+    border-bottom:1px solid rgba(219,214,205,0.8);
   }
   .data-table thead th:last-child { text-align:right; }
   .data-table tbody td {
     padding:14px 16px;
     font-size:10.5px;
     vertical-align:middle;
-    border-bottom:1px solid #F0EAE5;
+    border-bottom:1px solid rgba(240,234,229,0.9);
+    background:rgba(255,255,255,0.6);
   }
   .data-table tbody tr:last-child td { border-bottom:none; }
   .data-table tbody td:last-child { text-align:right; font-weight:700; }
@@ -376,17 +447,17 @@ export function getReportHTML(data: ReportData): string {
     color:#FFFFFF;
   }
 
-  /* ── CTA Block ── */
+  /* ── CTA Block — CSS pur ── */
   .cta-block {
     border-radius:12px;
     padding:28px 32px;
-    color:#FFFFFF;
     margin:24px 0;
+    color:#FFFFFF;
   }
   .cta-block h3 { color:#FFFFFF; font-size:16px; font-weight:600; margin-bottom:16px; }
   .cta-row { display:flex; align-items:center; gap:10px; margin:8px 0; }
-  .cta-label { font-size:9px; font-weight:400; opacity:0.7; min-width:40px; }
-  .cta-value { font-size:12px; font-weight:600; }
+  .cta-label { font-size:9px; font-weight:400; opacity:0.7; min-width:40px; color:#FFFFFF; }
+  .cta-value { font-size:12px; font-weight:600; color:#FFFFFF; }
 
   /* ── Check list ── */
   .check-item { display:flex; align-items:flex-start; gap:10px; margin:10px 0; }
@@ -400,44 +471,45 @@ export function getReportHTML(data: ReportData): string {
 <!-- PAGE 1 — COUVERTURE                                              -->
 <!-- ══════════════════════════════════════════════════════════════════ -->
 <div class="page">
-  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:60px 48px;">
-    
+  <img src="${svgCover}" class="page-bg" alt="" />
+  <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:60px 48px;">
+
     <div style="flex:1;"></div>
-    
+
     <!-- Logo -->
-    <img src="data:image/png;base64,${logo}" 
-         style="width:140px;height:auto;margin-bottom:28px;" 
+    <img src="data:image/png;base64,${logo}"
+         style="width:200px;height:auto;margin-bottom:28px;"
          alt="Médéré"/>
-    
+
     <!-- Titre -->
-    <h1 style="font-size:32px;text-align:center;margin-bottom:4px;">Votre diagnostic</h1>
-    <h1 style="font-size:32px;text-align:center;margin-bottom:16px;">certification périodique</h1>
-    
+    <h1 style="font-size:38px;text-align:center;margin-bottom:4px;">Votre diagnostic</h1>
+    <h1 style="font-size:38px;text-align:center;margin-bottom:16px;">certification périodique</h1>
+
     <!-- Profession -->
     <p style="font-size:17px;font-weight:600;color:${prof.color};text-align:center;margin-bottom:6px;">
       ${prof.label}
     </p>
-    
+
     <!-- Date -->
     <p style="font-size:11px;font-weight:300;color:#9C9494;text-align:center;margin-bottom:32px;">
       ${monthYear}
     </p>
-    
+
     <!-- Badge DPC -->
-    <div style="background:#FFFFFF;border-radius:999px;padding:10px 28px;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+    <div style="background:rgba(255,255,255,0.82);border-radius:999px;padding:10px 28px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
       <p style="font-size:11px;font-weight:600;color:#494343;text-align:center;">
         Organisme certifié DPC n°9262 &bull; Qualiopi
       </p>
     </div>
-    
+
     <div style="flex:1;"></div>
-    
+
     <!-- Confidentiel -->
     <p style="font-size:9px;font-weight:300;color:#9C9494;text-align:center;margin-bottom:40px;">
       Document personnalisé — Confidentiel
     </p>
   </div>
-  
+
   <div class="page-footer">Médéré — Document confidentiel — ${monthYear}</div>
 </div>
 
@@ -446,6 +518,7 @@ export function getReportHTML(data: ReportData): string {
 <!-- PAGE 2 — VOTRE DIAGNOSTIC                                        -->
 <!-- ══════════════════════════════════════════════════════════════════ -->
 <div class="page">
+  <img src="${svgPageH2}" class="page-bg" alt="" />
   <div class="page-inner">
     <div class="page-header">
       <img src="data:image/png;base64,${logo}" alt="Médéré"/>
@@ -477,38 +550,41 @@ export function getReportHTML(data: ReportData): string {
       Vous avez jusqu'en <strong>${deadline}</strong> pour compléter vos 8 actions
     </p>
 
-    <!-- Bloc table -->
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>${prof.terminology}</th>
-          <th>Statut</th>
-          <th>Score</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${blocs.map(b => `
-        <tr>
-          <td>
-            <span class="bloc-label">${prof.terminology} ${b.num}</span>
-            <span class="bloc-name">${b.name}</span>
-          </td>
-          <td style="color:${b.statusColor};font-weight:600;font-size:11px;">
-            ${b.status}${b.status === 'Validé' ? ' ✓' : ''}
-          </td>
-          <td style="color:${b.statusColor};font-size:14px;">
-            ${b.score}
-          </td>
-        </tr>
-        `).join('')}
-      </tbody>
-    </table>
+    <!-- Bloc table — tableau-rapport.svg background -->
+    <div class="table-wrapper">
+      <img src="${svgTableau}" class="table-bg" alt="" />
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>${prof.terminology}</th>
+            <th>Statut</th>
+            <th>Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${blocs.map(b => `
+          <tr>
+            <td>
+              <span class="bloc-label">${prof.terminology} ${b.num}</span>
+              <span class="bloc-name">${b.name}</span>
+            </td>
+            <td style="color:${b.statusColor};font-weight:600;font-size:11px;">
+              ${b.status}${b.status === 'Validé' ? ' ✓' : ''}
+            </td>
+            <td style="color:${b.statusColor};font-size:14px;">
+              ${b.score}
+            </td>
+          </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
 
     <!-- Note blocs 3&4 -->
-    <div class="info-box" style="border-left-color:${prof.color};margin-top:16px;">
-      <p style="font-size:10px;color:#686162;">
-        Les ${prof.terminologyPlural} 3 &amp; 4 sont entièrement nouveaux dans ce cycle. 
-        Tous les praticiens partent de zéro pour ces 4 actions. 
+    <div class="info-box urgence">
+      <p>
+        Les ${prof.terminologyPlural} 3 &amp; 4 sont entièrement nouveaux dans ce cycle.
+        Tous les praticiens partent de zéro pour ces 4 actions.
         Médéré ne propose pas encore de formations pour ces ${prof.terminologyPlural.toLowerCase()}.
       </p>
     </div>
@@ -521,6 +597,7 @@ export function getReportHTML(data: ReportData): string {
 <!-- PAGE 3 — CE QUE LE RÉFÉRENTIEL EXIGE                             -->
 <!-- ══════════════════════════════════════════════════════════════════ -->
 <div class="page">
+  <img src="${svgPageH2}" class="page-bg" alt="" />
   <div class="page-inner">
     <div class="page-header">
       <img src="data:image/png;base64,${logo}" alt="Médéré"/>
@@ -536,23 +613,25 @@ export function getReportHTML(data: ReportData): string {
     </h2>
 
     <p style="margin-bottom:20px;">
-      L'arrêté du 26 février 2026 (NOR&nbsp;: SFHH2605575A) définit 8 actions obligatoires 
-      réparties sur 4 ${prof.terminologyPlural.toLowerCase()}. Chaque ${prof.terminology.toLowerCase()} 
+      L'arrêté du 26 février 2026 (NOR&nbsp;: SFHH2605575A) définit 8 actions obligatoires
+      réparties sur 4 ${prof.terminologyPlural.toLowerCase()}. Chaque ${prof.terminology.toLowerCase()}
       requiert au minimum 2 actions validées sur votre cycle de ${prof.cycleDuration} ans.
     </p>
 
     ${prof.constraint ? `
-    <div class="info-box warning">
+    <!-- Contrainte spécifique -->
+    <div class="info-box resume">
       <h3>Contrainte spécifique à votre profession</h3>
       <p>${prof.constraint}</p>
     </div>
     ` : ''}
 
-    <div class="info-box danger">
+    <!-- Blocs 3 & 4 nouveaux -->
+    <div class="info-box urgence">
       <h3>${prof.terminologyPlural} 3 et 4 — 100&nbsp;% nouveaux</h3>
       <p>
-        Les ${prof.terminologyPlural} 3 et 4 sont entièrement nouveaux. 
-        Aucune formation DPC antérieure à 2023 ne les couvre. 
+        Les ${prof.terminologyPlural} 3 et 4 sont entièrement nouveaux.
+        Aucune formation DPC antérieure à 2023 ne les couvre.
         100&nbsp;% des praticiens partent de zéro.
       </p>
     </div>
@@ -561,24 +640,28 @@ export function getReportHTML(data: ReportData): string {
       Détail des 4 ${prof.terminologyPlural.toLowerCase()} pour les ${prof.label}s :
     </p>
 
-    <table class="data-table">
-      <tbody>
-        ${blocs.map(b => `
-        <tr>
-          <td>
-            <span class="bloc-label">${prof.terminology} ${b.num}</span>
-            <span class="bloc-name">${b.name}</span>
-          </td>
-          <td style="color:${b.covered ? '#2DA131' : '#9C9494'};font-weight:${b.covered ? '600' : '400'};font-size:10.5px;">
-            ${b.covered ? 'Couvert par Médéré' : 'Hors catalogue'}
-          </td>
-          <td style="font-size:10px;color:#686162;">
-            2 actions min.
-          </td>
-        </tr>
-        `).join('')}
-      </tbody>
-    </table>
+    <!-- Table détail — tableau-rapport.svg -->
+    <div class="table-wrapper">
+      <img src="${svgTableau}" class="table-bg" alt="" />
+      <table class="data-table">
+        <tbody>
+          ${blocs.map(b => `
+          <tr>
+            <td>
+              <span class="bloc-label">${prof.terminology} ${b.num}</span>
+              <span class="bloc-name">${b.name}</span>
+            </td>
+            <td style="color:${b.covered ? '#2DA131' : '#9C9494'};font-weight:${b.covered ? '600' : '400'};font-size:10.5px;">
+              ${b.covered ? 'Couvert par Médéré' : 'Hors catalogue'}
+            </td>
+            <td style="font-size:10px;color:#686162;">
+              2 actions min.
+            </td>
+          </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
 
     <p style="font-size:8.5px;font-weight:300;color:#9C9494;margin-top:12px;">
       Référence : Arrêté du 26 février 2026 — NOR&nbsp;: SFHH2605575A — ${prof.annexe}
@@ -592,6 +675,7 @@ export function getReportHTML(data: ReportData): string {
 <!-- PAGE 4 — FORMATIONS MÉDÉRÉ                                        -->
 <!-- ══════════════════════════════════════════════════════════════════ -->
 <div class="page">
+  <img src="${svgPageH2}" class="page-bg" alt="" />
   <div class="page-inner">
     <div class="page-header">
       <img src="data:image/png;base64,${logo}" alt="Médéré"/>
@@ -611,12 +695,12 @@ export function getReportHTML(data: ReportData): string {
     </p>
 
     <!-- Catalogue placeholder -->
-    <div class="info-box" style="border-left-color:${prof.color};">
+    <div class="info-box resume">
       <h3>Catalogue en cours de mise à jour</h3>
       <p>
-        Nos formations adaptées à votre profil (${prof.label}) seront disponibles prochainement. 
-        Consultez notre catalogue sur <strong>medere.fr</strong> ou contactez-nous au 
-        <strong>01&nbsp;88&nbsp;33&nbsp;95&nbsp;28</strong> pour connaître les sessions ouvertes.
+        Nos formations adaptées à votre profil (${prof.label}) seront disponibles prochainement.
+        Consultez notre catalogue sur <strong style="color:#FFFFFF;">medere.fr</strong> ou contactez-nous au
+        <strong style="color:#FFFFFF;">01&nbsp;88&nbsp;33&nbsp;95&nbsp;28</strong> pour connaître les sessions ouvertes.
       </p>
     </div>
 
@@ -636,20 +720,20 @@ export function getReportHTML(data: ReportData): string {
     </ul>
 
     <!-- ANDPC -->
-    <div class="info-box success">
+    <div class="info-box urgence">
       <h3>Prise en charge ANDPC</h3>
       <p>
-        Nos formations sont éligibles à votre certification périodique et financées par l'ANDPC — 
+        Nos formations sont éligibles à votre certification périodique et financées par l'ANDPC —
         sans avance de frais de votre part. Seuls le CNP et l'Ordre valident définitivement en fin de cycle.
       </p>
     </div>
 
     <!-- Blocs 3&4 -->
-    <div class="info-box" style="border-left-color:${prof.color};">
+    <div class="info-box resume">
       <h3>Pour les ${prof.terminologyPlural} 3 &amp; 4</h3>
       <p>
-        Ces ${prof.terminologyPlural.toLowerCase()} étant entièrement nouveaux (aucune offre existante avant 2023), 
-        Médéré développe actuellement des formations spécifiques. 
+        Ces ${prof.terminologyPlural.toLowerCase()} étant entièrement nouveaux (aucune offre existante avant 2023),
+        Médéré développe actuellement des formations spécifiques.
         Contactez-nous pour être informé en priorité.
       </p>
     </div>
@@ -662,6 +746,7 @@ export function getReportHTML(data: ReportData): string {
 <!-- PAGE 5 — POURQUOI AGIR EN 2026                                    -->
 <!-- ══════════════════════════════════════════════════════════════════ -->
 <div class="page">
+  <img src="${svgPageH2}" class="page-bg" alt="" />
   <div class="page-inner">
     <div class="page-header">
       <img src="data:image/png;base64,${logo}" alt="Médéré"/>
@@ -674,7 +759,7 @@ export function getReportHTML(data: ReportData): string {
     <h2>Pourquoi agir en 2026</h2>
 
     <p style="margin-bottom:16px;">
-      La certification périodique n'est pas une recommandation — c'est une obligation légale. 
+      La certification périodique n'est pas une recommandation — c'est une obligation légale.
       Voici pourquoi ne pas attendre :
     </p>
 
@@ -697,29 +782,29 @@ export function getReportHTML(data: ReportData): string {
       </li>
     </ul>
 
-    <!-- Urgency callout -->
-    <div class="info-box" style="border-left-color:${prof.color};background:${prof.color}0D;">
+    <!-- Encadré urgence -->
+    <div class="info-box urgence">
       <p style="font-weight:600;font-size:11.5px;color:#302D2D;">
         Chaque semaine qui passe = une place en moins + un risque de financement personnel en plus.
       </p>
     </div>
 
-    <!-- ANDPC calendar -->
-    <div class="info-box" style="border-left-color:${prof.color};">
+    <!-- Calendrier ANDPC -->
+    <div class="info-box resume">
       <h3>Le calendrier ANDPC en pratique</h3>
       <p>
-        L'ANDPC attribue les budgets en début d'année civile. Une fois les enveloppes épuisées, 
-        toute formation réalisée reste à votre charge. Les places dans les sessions éligibles sont 
-        limitées et s'épuisent rapidement — particulièrement pour les spécialités comme la pédiatrie 
+        L'ANDPC attribue les budgets en début d'année civile. Une fois les enveloppes épuisées,
+        toute formation réalisée reste à votre charge. Les places dans les sessions éligibles sont
+        limitées et s'épuisent rapidement — particulièrement pour les spécialités comme la pédiatrie
         et la psychiatrie.
       </p>
     </div>
 
-    <!-- Regulatory reminder -->
-    <div class="info-box danger">
+    <!-- Rappel réglementaire -->
+    <div class="info-box urgence">
       <p style="font-weight:600;font-size:10.5px;color:#CC0000;">
-        Rappel réglementaire : en cas de non-respect de vos obligations de certification périodique, 
-        votre Ordre peut engager une procédure disciplinaire. Ce document vous aide à anticiper — 
+        Rappel réglementaire : en cas de non-respect de vos obligations de certification périodique,
+        votre Ordre peut engager une procédure disciplinaire. Ce document vous aide à anticiper —
         agissez maintenant.
       </p>
     </div>
@@ -732,6 +817,7 @@ export function getReportHTML(data: ReportData): string {
 <!-- PAGE 6 — À PROPOS + CTA                                          -->
 <!-- ══════════════════════════════════════════════════════════════════ -->
 <div class="page">
+  <img src="${svgPageNormal}" class="page-bg" alt="" />
   <div class="page-inner">
     <div class="page-header">
       <img src="data:image/png;base64,${logo}" alt="Médéré"/>
@@ -741,14 +827,9 @@ export function getReportHTML(data: ReportData): string {
       </div>
     </div>
 
-    <!-- Grand logo -->
-    <img src="data:image/png;base64,${logo}" 
-         style="width:120px;height:auto;margin-bottom:16px;" 
-         alt="Médéré"/>
-
     <p style="font-size:11px;font-style:italic;color:#554F4F;line-height:1.6;margin-bottom:24px;">
-      Médéré est le seul organisme de formation fondé et dirigé par un médecin, 
-      le Dr&nbsp;Harry Sitbon, qui ne vend que des formations conformes aux 
+      Médéré est le seul organisme de formation fondé et dirigé par un médecin,
+      le Dr&nbsp;Harry Sitbon, qui ne vend que des formations conformes aux
       référentiels officiels de certification périodique.
     </p>
 
@@ -784,29 +865,17 @@ export function getReportHTML(data: ReportData): string {
       <span class="check-text">Méthodes HAS de référence — Qualiopi certifié</span>
     </div>
 
-    <!-- CTA -->
-    <div class="cta-block" style="background:${prof.color};margin-top:28px;">
-      <h3>Prenez rendez-vous avec un conseiller Médéré</h3>
-      <div class="cta-row">
-        <span class="cta-label">Tél.</span>
-        <span class="cta-value">01&nbsp;88&nbsp;33&nbsp;95&nbsp;28</span>
-      </div>
-      <div class="cta-row">
-        <span class="cta-label">Email</span>
-        <span class="cta-value">contact@medere.fr</span>
-      </div>
-      <div class="cta-row">
-        <span class="cta-label">Web</span>
-        <span class="cta-value">medere.fr</span>
-      </div>
-    </div>
+    <!-- Bannière CTA -->
+    <a href="https://www.medere.fr/formations/medecin-generaliste" style="display:block;margin-top:24px;">
+      <img src="${svgBanniere}" style="width:100%;height:auto;display:block;" alt="Voir le catalogue Médéré" />
+    </a>
 
     <div style="flex:1;"></div>
 
     <!-- Legal -->
     <p style="font-size:7.5px;font-weight:300;color:#9C9494;text-align:center;line-height:1.5;">
-      Basé sur l'arrêté du 26 février 2026 — NOR&nbsp;: SFHH2605575A. 
-      Ce document est une estimation indicative. La validation finale de votre certification 
+      Basé sur l'arrêté du 26 février 2026 — NOR&nbsp;: SFHH2605575A.
+      Ce document est une estimation indicative. La validation finale de votre certification
       est prononcée par votre Ordre professionnel.
     </p>
   </div>

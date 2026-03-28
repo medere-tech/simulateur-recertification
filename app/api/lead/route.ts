@@ -98,16 +98,8 @@ export async function POST(req: NextRequest) {
   // Construction du contact HubSpot
   const contact: HubSpotContact = {
     email,
-    phone:                        phone || undefined,
-    certification_score:          score,
-    certification_profession:     profession as HubSpotContact["certification_profession"],
-    certification_diploma_year:   diplomaYear as HubSpotContact["certification_diploma_year"],
-    certification_dpc_formations: dpcFormations as HubSpotContact["certification_dpc_formations"],
-    certification_urgency:        (urgency ?? "rouge") as HubSpotContact["certification_urgency"],
-    certification_bloc1_status:   (bloc1Status ?? "a_faire") as HubSpotContact["certification_bloc1_status"],
-    certification_bloc2_status:   (bloc2Status ?? "a_faire") as HubSpotContact["certification_bloc2_status"],
-    certification_awareness:      awareness || undefined,
-    certification_source:         source ?? "simulateur_web",
+    phone:                    phone || undefined,
+    certification_profession: profession as HubSpotContact["certification_profession"],
   };
 
   // ── Feature flag HubSpot ────────────────────────────────────────────────────

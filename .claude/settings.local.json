@@ -8,7 +8,8 @@
       "Bash(npm uninstall:*)",
       "Bash(npm run:*)",
       "Bash(curl:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(node -e \":*)"
     ]
   }
 }

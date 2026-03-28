@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="480"
+   height="600"
+   viewBox="0 0 480 600"
+   fill="none"
+   version="1.1"
+   id="svg10"
+   sodipodi:docname="page-avec-H2.svg"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview10"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     inkscape:zoom="0.95105862"
+     inkscape:cx="313.33505"
+     inkscape:cy="232.89837"
+     inkscape:window-width="1920"
+     inkscape:window-height="1046"
+     inkscape:window-x="2869"
+     inkscape:window-y="-11"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g9" />
+  <g
+     clip-path="url(#clip0_3316_1358)"
+     id="g9">
+    <rect
+       width="480"
+       height="600"
+       fill="#F9F5F2"
+       id="rect1" />
+    <rect
+       x="596.55621"
+       y="73.967628"
+       width="174.48199"
+       height="174.48199"
+       rx="87.240997"
+       transform="rotate(37.7081)"
+       fill="#9f84bd"
+       id="rect4" />
+    <path
+       d="m 502.13528,329.27153 c -6.327,-8.316 -18.299,-9.968 -25.856,-2.75 -58.966,56.318 -71.035,146.578 -28.821,216.426 5.387,8.913 17.321,10.48 25.61,4.174 l 108.38,-82.455 c 8.289,-6.306 9.896,-18.137 3.59,-26.425 z"
+       fill="#f19953"
+       id="path5" />
+    <path
+       d="m -216.04646,-79.335691 c 17.09,-17.0898 72.22721,10.33973 123.15316,61.2656 50.92585,50.9259 78.35545,106.064004 61.26565,123.153001 -17.0898,17.09 -72.2274,-10.338997 -123.1533,-61.265001 -50.92551,-50.9261995 -78.35551,-106.06383 -61.26551,-123.1536 z"
+       fill="#d87da9"
+       id="path6" />
+    <path
+       d="m -171.57456,-123.80779 c 17.08981,-17.0898 72.22741,10.3398 123.15331,61.265689 50.9259004,50.92591 78.3558,106.06401 61.2657,123.15301 -17.0897996,17.090004 -72.2275,-10.339 -123.1534,-61.26529991 C -161.23485,-51.580341 -188.66446,-106.71799 -171.57456,-123.80779 Z"
+       fill="#d87da9"
+       id="path7" />
+    <path
+       d="m -127.10255,-168.28009 c 17.0898,-17.09 72.2274,10.34 123.1533004,61.2659 50.9257956,50.925939 78.3557926,106.06359909 61.2657956,123.153399 -17.09,17.0898 -72.227496,-10.3397999 -123.153396,-61.2657 -50.9259,-50.9259 -78.3555,-106.063499 -61.2657,-123.153599 z"
+       fill="#d87da9"
+       id="path8" />
+  </g>
+  <defs
+     id="defs10">
+    <clipPath
+       id="clip0_3316_1358">
+      <rect
+         width="480"
+         height="600"
+         fill="white"
+         id="rect9" />
+    </clipPath>
+    <clipPath
+       id="clip1_3316_1358">
+      <rect
+         width="56"
+         height="56"
+         fill="white"
+         transform="translate(212 178)"
+         id="rect10" />
+    </clipPath>
+  </defs>
+</svg>
