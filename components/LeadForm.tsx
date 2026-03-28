@@ -82,10 +82,13 @@ type Props = {
   urgency: string;
   bloc1Status: string;
   bloc2Status: string;
+  bloc3Status: string;
+  bloc4Status: string;
   diplomaYear: string;
   dpcFormations: string;
   eppActions: string;
-  awareness: string;
+  relationPatient: string;
+  santePerso: string;
   accentColor: string;
   textOnAccent: string;
   planParams: string;
@@ -97,10 +100,13 @@ export default function LeadForm({
   urgency,
   bloc1Status,
   bloc2Status,
+  bloc3Status,
+  bloc4Status,
   diplomaYear,
   dpcFormations,
   eppActions,
-  awareness,
+  relationPatient,
+  santePerso,
   accentColor,
   textOnAccent,
   planParams,
@@ -142,16 +148,19 @@ export default function LeadForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email,
-          phone:         phone.trim() || undefined,
+          phone:           phone.trim() || undefined,
           profession,
           diplomaYear,
           dpcFormations,
           eppActions,
-          awareness,
+          relationPatient,
+          santePerso,
           score,
           urgency,
           bloc1Status,
           bloc2Status,
+          bloc3Status,
+          bloc4Status,
           source: "simulateur_web",
         }),
       });
@@ -169,7 +178,7 @@ export default function LeadForm({
       fetch("/api/report", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, profession, diplomaYear, dpcFormations, eppActions, awareness, score, urgency, bloc1Status, bloc2Status }),
+        body: JSON.stringify({ email, profession, diplomaYear, dpcFormations, eppActions, relationPatient, santePerso, score, urgency, bloc1Status, bloc2Status, bloc3Status, bloc4Status }),
       }).catch(() => {/* silencieux - génération PDF non bloquante */});
 
       // ── 4. Redirect vers confirmation ───────────────────────────────────────

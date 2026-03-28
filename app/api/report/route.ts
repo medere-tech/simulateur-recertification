@@ -1,6 +1,5 @@
 // POST /api/report - Génération PDF personnalisé
 // Retourne le PDF en base64 pour téléchargement côté client
-// L'envoi HubSpot email sera implémenté dans une prochaine étape
 
 import { NextRequest, NextResponse } from "next/server";
 import { generateReport } from "@/lib/pdf/generate";
@@ -13,12 +12,13 @@ type ReportRequestBody = {
   profession: ProfessionId;
   diplomaYear: DiplomaYear;
   dpcFormations: string;
-  awareness: string;
   email: string;
   score: number;
   urgency: Urgency;
   bloc1Status: DimensionStatus;
   bloc2Status: DimensionStatus;
+  bloc3Status: DimensionStatus;
+  bloc4Status: DimensionStatus;
 };
 
 const VALID_PROFESSIONS: ProfessionId[] = ["MG", "CD", "GO", "PED", "PSY", "AUTRE"];
@@ -40,7 +40,9 @@ function validate(body: Partial<ReportRequestBody>): body is ReportRequestBody {
     body.score <= 8 &&
     VALID_URGENCIES.includes(body.urgency as Urgency) &&
     VALID_STATUSES.includes(body.bloc1Status as DimensionStatus) &&
-    VALID_STATUSES.includes(body.bloc2Status as DimensionStatus)
+    VALID_STATUSES.includes(body.bloc2Status as DimensionStatus) &&
+    VALID_STATUSES.includes(body.bloc3Status as DimensionStatus) &&
+    VALID_STATUSES.includes(body.bloc4Status as DimensionStatus)
   );
 }
 
@@ -65,15 +67,16 @@ export async function POST(req: NextRequest) {
 
   try {
     const pdfBuffer = await generateReport({
-      profession: body.profession,
-      diplomaYear: body.diplomaYear,
+      profession:   body.profession,
+      diplomaYear:  body.diplomaYear,
       dpcFormations: body.dpcFormations ?? "",
-      awareness: body.awareness ?? "",
-      email: body.email ?? "",
-      score: body.score,
-      urgency: body.urgency,
-      bloc1Status: body.bloc1Status,
-      bloc2Status: body.bloc2Status,
+      email:        body.email ?? "",
+      score:        body.score,
+      urgency:      body.urgency,
+      bloc1Status:  body.bloc1Status,
+      bloc2Status:  body.bloc2Status,
+      bloc3Status:  body.bloc3Status,
+      bloc4Status:  body.bloc4Status,
     });
 
     const pdf = pdfBuffer.toString("base64");

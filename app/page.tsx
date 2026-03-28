@@ -16,7 +16,7 @@ import {
 // ─── Données stepper ──────────────────────────────────────────────────────────
 
 const STEPS = [
-  { num: 1, label: "4 questions",      active: true  },
+  { num: 1, label: "6 questions",      active: true  },
   { num: 2, label: "Votre diagnostic", active: false },
   { num: 3, label: "Plan d'action",    active: false },
 ];
@@ -59,7 +59,7 @@ export default function Home() {
                 className="animate-hero-in mt-5 text-center text-lg leading-relaxed text-[#686162] lg:text-left"
                 style={{ animationDelay: "100ms" }}
               >
-                Professionnels de santé, répondez à 4&nbsp;questions simples. Découvrez où vous en êtes dans
+                Professionnels de santé, répondez à 6&nbsp;questions simples. Découvrez où vous en êtes dans
                 votre parcours de certification périodique et ce qu&apos;il vous
                 reste à faire avant le prochain contrôle de votre CNP.
               </p>

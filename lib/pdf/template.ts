@@ -6,12 +6,13 @@ export interface ReportData {
   profession: string;
   diplomaYear: string;
   dpcFormations: string;
-  awareness: string;
   email: string;
   score: number;
   urgency: 'rouge' | 'orange' | 'vert';
   bloc1Status: string;
   bloc2Status: string;
+  bloc3Status: string;
+  bloc4Status: string;
 }
 
 // ─── Profession Config ───────────────────────────────────────────────
@@ -258,8 +259,8 @@ export function getReportHTML(data: ReportData): string {
   const blocs = [
     { num: 1, name: prof.dimensions[0].name, status: getStatusLabel(data.bloc1Status), statusColor: getStatusColor(data.bloc1Status), score: getScore(data.bloc1Status), covered: true,  note: null },
     { num: 2, name: prof.dimensions[1].name, status: getStatusLabel(data.bloc2Status), statusColor: getStatusColor(data.bloc2Status), score: getScore(data.bloc2Status), covered: true,  note: null },
-    { num: 3, name: prof.dimensions[2].name, status: 'Nouveau — À faire',              statusColor: '#CC0000',                        score: '0/2',                       covered: true,  note: '1 formation disponible' },
-    { num: 4, name: prof.dimensions[3].name, status: 'Nouveau — À faire',              statusColor: '#CC0000',                        score: '0/2',                       covered: false, note: null },
+    { num: 3, name: prof.dimensions[2].name, status: getStatusLabel(data.bloc3Status), statusColor: getStatusColor(data.bloc3Status), score: getScore(data.bloc3Status), covered: true,  note: data.bloc3Status === 'a_faire' ? '1 formation disponible' : null },
+    { num: 4, name: prof.dimensions[3].name, status: getStatusLabel(data.bloc4Status), statusColor: getStatusColor(data.bloc4Status), score: getScore(data.bloc4Status), covered: false, note: null },
   ];
 
   return `<!DOCTYPE html>
@@ -696,7 +697,9 @@ export function getReportHTML(data: ReportData): string {
     </h2>
 
     <p style="font-size:12px;font-weight:400;color:#686162;margin-bottom:20px;">
-      ${prof.terminologyPlural} 1, 2 &amp; 3 — Pris en charge sans avance de frais via l'ANDPC
+      ${data.bloc3Status === 'a_faire'
+        ? `${prof.terminologyPlural} 1, 2 &amp; 3 — Pris en charge sans avance de frais via l'ANDPC`
+        : `${prof.terminologyPlural} 1 &amp; 2 — Pris en charge sans avance de frais via l'ANDPC`}
     </p>
 
     <!-- Catalogue placeholder -->
@@ -710,7 +713,7 @@ export function getReportHTML(data: ReportData): string {
     </div>
 
     <p style="font-size:10.5px;color:#686162;margin:20px 0 8px;">
-      Nos formations pour les ${prof.terminologyPlural.toLowerCase()} 1, 2 &amp; 3 couvrent :
+      Nos formations couvrent :
     </p>
 
     <ul class="bullet-list">
@@ -722,10 +725,12 @@ export function getReportHTML(data: ReportData): string {
         <span class="bullet-dot" style="background:${prof.color};"></span>
         <span>${prof.dimensions[1].name} — ${prof.terminology} 2</span>
       </li>
+      ${data.bloc3Status === 'a_faire' ? `
       <li>
         <span class="bullet-dot" style="background:${prof.color};"></span>
         <span>${prof.dimensions[2].name} — ${prof.terminology} 3 <span style="font-size:9.5px;color:#686162;">(Gestion de l'agressivité)</span></span>
       </li>
+      ` : ''}
     </ul>
 
     <!-- ANDPC -->

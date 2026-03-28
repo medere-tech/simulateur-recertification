@@ -6,7 +6,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PROFESSIONS, ProfessionId } from "@/lib/professions";
-import { calculateScore, DpcFormations, EppActions, DiplomaYear } from "@/lib/scoring";
+import { calculateScore, DpcFormations, EppActions, RelationPatient, SantePerso, DiplomaYear } from "@/lib/scoring";
 import { GA4 } from "@/lib/ga4";
 import SiteHeader from "@/components/SiteHeader";
 import LeadForm from "@/components/LeadForm";
@@ -19,18 +19,20 @@ export default function PlanActionClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const profession    = searchParams.get("profession")    as ProfessionId | null;
-  const diplomaYear   = searchParams.get("diplomaYear")   as DiplomaYear  | null;
-  const dpcFormations = searchParams.get("dpcFormations") as DpcFormations | null;
-  const eppActions    = searchParams.get("eppActions")    as EppActions   | null;
-  const awareness     = searchParams.get("awareness")     ?? "";
-  const confirmed     = searchParams.get("confirmed")     === "true";
+  const profession      = searchParams.get("profession")      as ProfessionId    | null;
+  const diplomaYear     = searchParams.get("diplomaYear")     as DiplomaYear     | null;
+  const dpcFormations   = searchParams.get("dpcFormations")   as DpcFormations   | null;
+  const eppActions      = searchParams.get("eppActions")      as EppActions      | null;
+  const relationPatient = searchParams.get("relationPatient") as RelationPatient | null;
+  const santePerso      = searchParams.get("santePerso")      as SantePerso      | null;
+  const confirmed       = searchParams.get("confirmed")       === "true";
 
   const isValid =
-    !!profession && !!diplomaYear && !!dpcFormations && !!eppActions && profession in PROFESSIONS;
+    !!profession && !!diplomaYear && !!dpcFormations && !!eppActions &&
+    !!relationPatient && !!santePerso && profession in PROFESSIONS;
 
   const result = isValid
-    ? calculateScore(profession!, diplomaYear!, dpcFormations!, eppActions!)
+    ? calculateScore(profession!, diplomaYear!, dpcFormations!, eppActions!, relationPatient!, santePerso!)
     : null;
 
   useEffect(() => {
@@ -48,15 +50,16 @@ export default function PlanActionClient() {
   const textOnAccent  = profConfig.textOnColor ?? "#FFFFFF";
   const dimensionLabel = profConfig.dimensionLabel;
   const dimensionLabelPlural = profConfig.dimensionLabelPlural;
-  const { totalScore, urgency, bloc1Status, bloc2Status } = result;
+  const { totalScore, urgency, bloc1Status, bloc2Status, bloc3Status, bloc4Status } = result;
 
   // Query string transmis au formulaire pour construire l'URL confirmed
   const planParams = new URLSearchParams({
-    profession:    profession!,
-    diplomaYear:   diplomaYear!,
-    dpcFormations: dpcFormations!,
-    eppActions:    eppActions!,
-    ...(awareness ? { awareness } : {}),
+    profession:      profession!,
+    diplomaYear:     diplomaYear!,
+    dpcFormations:   dpcFormations!,
+    eppActions:      eppActions!,
+    relationPatient: relationPatient!,
+    santePerso:      santePerso!,
   }).toString();
 
   // ── Rendu ──────────────────────────────────────────────────────────────────
@@ -98,10 +101,13 @@ export default function PlanActionClient() {
               urgency={urgency}
               bloc1Status={bloc1Status}
               bloc2Status={bloc2Status}
+              bloc3Status={bloc3Status}
+              bloc4Status={bloc4Status}
               diplomaYear={diplomaYear!}
               dpcFormations={dpcFormations!}
               eppActions={eppActions!}
-              awareness={awareness}
+              relationPatient={relationPatient!}
+              santePerso={santePerso!}
               dimensionLabel={dimensionLabel}
               dimensionLabelPlural={dimensionLabelPlural}
               planParams={planParams}
@@ -127,10 +133,13 @@ function Ecran7({
   urgency,
   bloc1Status,
   bloc2Status,
+  bloc3Status,
+  bloc4Status,
   diplomaYear,
   dpcFormations,
   eppActions,
-  awareness,
+  relationPatient,
+  santePerso,
   dimensionLabel,
   dimensionLabelPlural,
   planParams,
@@ -143,10 +152,13 @@ function Ecran7({
   urgency: string;
   bloc1Status: string;
   bloc2Status: string;
+  bloc3Status: string;
+  bloc4Status: string;
   diplomaYear: string;
   dpcFormations: string;
   eppActions: string;
-  awareness: string;
+  relationPatient: string;
+  santePerso: string;
   dimensionLabel: "Bloc" | "Axe";
   dimensionLabelPlural: "Blocs" | "Axes";
   planParams: string;
@@ -198,10 +210,13 @@ function Ecran7({
           urgency={urgency}
           bloc1Status={bloc1Status}
           bloc2Status={bloc2Status}
+          bloc3Status={bloc3Status}
+          bloc4Status={bloc4Status}
           diplomaYear={diplomaYear}
           dpcFormations={dpcFormations}
           eppActions={eppActions}
-          awareness={awareness}
+          relationPatient={relationPatient}
+          santePerso={santePerso}
           accentColor={accentColor}
           textOnAccent={textOnAccent}
           planParams={planParams}

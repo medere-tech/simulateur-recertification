@@ -1,6 +1,6 @@
 "use client";
 
-// State machine du simulateur - Écrans 2 à 6
+// State machine du simulateur - 6 questions (2 contexte + 4 scoring)
 // Navigation : URL params portent tout l'état (shareable, browser back fonctionnel)
 // Couleur d'accent : dynamique selon la profession dès l'étape 2
 
@@ -14,9 +14,11 @@ import { ChevronLeftIcon } from "@/components/icons";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type DiplomaYear   = "avant_2000" | "2000_2010" | "2011_2022" | "apres_2023";
-type DpcFormations = "3_plus" | "1_ou_2" | "aucune" | "ne_sait_pas";
-type EppActions    = "2_plus" | "1" | "aucune" | "ne_sait_pas";
+type DiplomaYear    = "avant_2000" | "2000_2010" | "2011_2022" | "apres_2023";
+type DpcFormations  = "3_plus" | "1_ou_2" | "aucune" | "ne_sait_pas";
+type EppActions     = "2_plus" | "1" | "aucune" | "ne_sait_pas";
+type RelationPatient = "2_plus" | "1" | "aucune" | "ne_sait_pas";
+type SantePerso     = "2_plus" | "1" | "aucune" | "ne_sait_pas";
 
 // ─── Données par étape ────────────────────────────────────────────────────────
 
@@ -50,10 +52,18 @@ const EPP_CHOICES = [
   { id: "ne_sait_pas", label: "Je ne sais pas" },
 ];
 
-const AWARENESS_CHOICES = [
-  { id: "connait_bien",   label: "Oui, je connais bien le sujet" },
-  { id: "entendu_parler", label: "J'en ai entendu parler" },
-  { id: "pas_du_tout",    label: "Non, pas du tout" },
+const RELATION_PATIENT_CHOICES = [
+  { id: "2_plus",      label: "Oui, 2 actions ou plus" },
+  { id: "1",           label: "Oui, 1 action" },
+  { id: "aucune",      label: "Non, aucune" },
+  { id: "ne_sait_pas", label: "Je ne sais pas" },
+];
+
+const SANTE_PERSO_CHOICES = [
+  { id: "2_plus",      label: "Oui, 2 actions ou plus" },
+  { id: "1",           label: "Oui, 1 action" },
+  { id: "aucune",      label: "Non, aucune" },
+  { id: "ne_sait_pas", label: "Je ne sais pas" },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -73,11 +83,12 @@ export default function SimulateurClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const step          = Number(searchParams.get("step") ?? "1");
-  const profession    = searchParams.get("profession") as ProfessionId | null;
-  const diplomaYear   = searchParams.get("diplomaYear") as DiplomaYear | null;
-  const dpcFormations = searchParams.get("dpcFormations") as DpcFormations | null;
-  const eppActions    = searchParams.get("eppActions") as EppActions | null;
+  const step           = Number(searchParams.get("step") ?? "1");
+  const profession     = searchParams.get("profession")     as ProfessionId   | null;
+  const diplomaYear    = searchParams.get("diplomaYear")    as DiplomaYear    | null;
+  const dpcFormations  = searchParams.get("dpcFormations")  as DpcFormations  | null;
+  const eppActions     = searchParams.get("eppActions")     as EppActions     | null;
+  const relationPatient = searchParams.get("relationPatient") as RelationPatient | null;
 
   // Validation : si params manquants pour une étape avancée, reset
   if (step >= 2 && !profession) {
@@ -96,9 +107,12 @@ export default function SimulateurClient() {
     router.replace(buildSimulateurUrl(4, { profession: profession!, diplomaYear: diplomaYear!, dpcFormations: dpcFormations! }));
     return null;
   }
+  if (step >= 6 && !relationPatient) {
+    router.replace(buildSimulateurUrl(5, { profession: profession!, diplomaYear: diplomaYear!, dpcFormations: dpcFormations!, eppActions: eppActions! }));
+    return null;
+  }
 
   const accentColor = profession ? PROFESSIONS[profession].color : "#006E90";
-  const profConfig  = profession ? PROFESSIONS[profession] : null;
 
   // ── Handlers ────────────────────────────────────────────────────────────────
 
@@ -131,27 +145,30 @@ export default function SimulateurClient() {
     }));
   }
 
-  function handleAwareness(id: string) {
-    GA4.stepCompleted(5, id, "awareness");
+  function handleRelationPatient(id: string) {
+    GA4.stepCompleted(5, id, "relation_patient");
+    router.push(buildSimulateurUrl(6, {
+      profession:     profession!,
+      diplomaYear:    diplomaYear!,
+      dpcFormations:  dpcFormations!,
+      eppActions:     eppActions!,
+      relationPatient: id,
+    }));
+  }
+
+  function handleSantePerso(id: string) {
+    GA4.stepCompleted(6, id, "sante_perso");
     router.push(buildResultatUrl({
-      profession:    profession!,
-      diplomaYear:   diplomaYear!,
-      dpcFormations: dpcFormations!,
-      eppActions:    eppActions!,
-      awareness:     id,
+      profession:      profession!,
+      diplomaYear:     diplomaYear!,
+      dpcFormations:   dpcFormations!,
+      eppActions:      eppActions!,
+      relationPatient: relationPatient!,
+      santePerso:      id,
     }));
   }
 
   // ── Rendu ────────────────────────────────────────────────────────────────────
-
-  const dimensionWord = profConfig?.dimensionLabelPlural ?? "blocs";
-  const awarenessQuestion = (
-    <>
-      Connaissez-vous les 4{" "}
-      <span style={{ color: accentColor }}>{dimensionWord.toLowerCase()}</span>{" "}
-      de la certification périodique&nbsp;?
-    </>
-  );
 
   return (
     <div className="flex min-h-screen flex-col bg-[#F9F5F2]">
@@ -161,7 +178,7 @@ export default function SimulateurClient() {
 
       {/* ── Barre de progression ───────────────────────────────────────────── */}
       <div className="bg-white shadow-sm">
-        <ProgressBar currentStep={step} totalSteps={5} accentColor={accentColor} />
+        <ProgressBar currentStep={step} totalSteps={6} accentColor={accentColor} />
       </div>
 
       {/* ── Contenu - key={step} déclenche le fade-in à chaque changement ─── */}
@@ -210,7 +227,7 @@ export default function SimulateurClient() {
           {step === 3 && (
             <QuestionCard
               question="Combien de formations DPC avez-vous suivies depuis janvier 2023 ?"
-              subtitle="E-learning, classes virtuelles, présentiel — hors EPP et analyse de pratiques"
+              subtitle="E-learning, classes virtuelles, présentiel - hors EPP et analyse de pratiques"
               choices={DPC_CHOICES}
               onSelect={handleDpcFormations}
               accentColor={accentColor}
@@ -228,12 +245,24 @@ export default function SimulateurClient() {
             />
           )}
 
-          {/* Étape 5 - Connaissance des blocs/axes */}
+          {/* Étape 5 - Relation patient (Bloc 3) */}
           {step === 5 && (
             <QuestionCard
-              question={awarenessQuestion}
-              choices={AWARENESS_CHOICES}
-              onSelect={handleAwareness}
+              question="Avez-vous suivi une formation sur la relation patient ?"
+              subtitle="Annonce diagnostique, communication thérapeutique, décision partagée, gestion de l'agressivité..."
+              choices={RELATION_PATIENT_CHOICES}
+              onSelect={handleRelationPatient}
+              accentColor={accentColor}
+            />
+          )}
+
+          {/* Étape 6 - Santé professionnelle (Bloc 4) */}
+          {step === 6 && (
+            <QuestionCard
+              question="Avez-vous réalisé une action liée à votre santé professionnelle ?"
+              subtitle="Burn-out, ergonomie, gestion du stress, qualité de vie au travail, gestion des risques..."
+              choices={SANTE_PERSO_CHOICES}
+              onSelect={handleSantePerso}
               accentColor={accentColor}
             />
           )}

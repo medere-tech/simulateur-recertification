@@ -11,8 +11,9 @@ import {
   calculateScore,
   DpcFormations,
   EppActions,
+  RelationPatient,
+  SantePerso,
   DiplomaYear,
-  DimensionStatus,
 } from "@/lib/scoring";
 import { GA4 } from "@/lib/ga4";
 import ScoreGauge from "@/components/ScoreGauge";
@@ -46,22 +47,25 @@ export default function ResultatClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const profession    = searchParams.get("profession") as ProfessionId | null;
-  const diplomaYear   = searchParams.get("diplomaYear") as DiplomaYear | null;
-  const dpcFormations = searchParams.get("dpcFormations") as DpcFormations | null;
-  const eppActions    = searchParams.get("eppActions") as EppActions | null;
-  const awareness     = searchParams.get("awareness") ?? "";
+  const profession      = searchParams.get("profession")      as ProfessionId    | null;
+  const diplomaYear     = searchParams.get("diplomaYear")     as DiplomaYear     | null;
+  const dpcFormations   = searchParams.get("dpcFormations")   as DpcFormations   | null;
+  const eppActions      = searchParams.get("eppActions")      as EppActions      | null;
+  const relationPatient = searchParams.get("relationPatient") as RelationPatient | null;
+  const santePerso      = searchParams.get("santePerso")      as SantePerso      | null;
 
   const isValid =
     !!profession &&
     !!diplomaYear &&
     !!dpcFormations &&
     !!eppActions &&
+    !!relationPatient &&
+    !!santePerso &&
     profession in PROFESSIONS;
 
   // Score calculé uniquement si params valides
   const result = isValid
-    ? calculateScore(profession!, diplomaYear!, dpcFormations!, eppActions!)
+    ? calculateScore(profession!, diplomaYear!, dpcFormations!, eppActions!, relationPatient!, santePerso!)
     : null;
 
   // GA4 + redirect (toujours appelé, logique conditionnelle à l'intérieur)
@@ -88,18 +92,20 @@ export default function ResultatClient() {
   const textOnAccent = profConfig.textOnColor ?? "#FFFFFF";
   const dimensionLabel = profConfig.dimensionLabel;
 
-  const { bloc1, bloc2, totalScore, maxScore, echeance, urgency, bloc1Status, bloc2Status } = result;
+  const { bloc1, bloc2, bloc3, bloc4, totalScore, maxScore, echeance, urgency,
+          bloc1Status, bloc2Status, bloc3Status, bloc4Status } = result;
   const remainingActions = maxScore - totalScore;
 
   const constraint = getConstraint(profession!);
 
   // Params transmis au plan d'action
   const planParams = new URLSearchParams({
-    profession:    profession!,
-    diplomaYear:   diplomaYear!,
-    dpcFormations: dpcFormations!,
-    eppActions:    eppActions!,
-    ...(awareness ? { awareness } : {}),
+    profession:      profession!,
+    diplomaYear:     diplomaYear!,
+    dpcFormations:   dpcFormations!,
+    eppActions:      eppActions!,
+    relationPatient: relationPatient!,
+    santePerso:      santePerso!,
   }).toString();
 
   // ── Rendu ──────────────────────────────────────────────────────────────────
@@ -166,26 +172,26 @@ export default function ResultatClient() {
                 dimensionLabel={dimensionLabel}
                 name={profConfig.dimensions[1].name}
                 score={bloc2}
-                status={bloc2Status as DimensionStatus}
+                status={bloc2Status}
                 animDelay={150}
               />
               <BlocStatus
                 index={3}
                 dimensionLabel={dimensionLabel}
                 name={profConfig.dimensions[2].name}
-                score={0}
-                status="a_faire"
-                isNew
-                medereNote="1 formation Médéré disponible"
+                score={bloc3}
+                status={bloc3Status}
+                isNew={bloc3Status === "a_faire"}
+                medereNote={bloc3Status === "a_faire" ? "1 formation Médéré disponible" : undefined}
                 animDelay={300}
               />
               <BlocStatus
                 index={4}
                 dimensionLabel={dimensionLabel}
                 name={profConfig.dimensions[3].name}
-                score={0}
-                status="a_faire"
-                isNew
+                score={bloc4}
+                status={bloc4Status}
+                isNew={bloc4Status === "a_faire"}
                 animDelay={450}
               />
             </div>

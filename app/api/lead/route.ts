@@ -54,11 +54,14 @@ type LeadPayload = {
   diplomaYear: string;
   dpcFormations: string;
   eppActions?: string;
-  awareness?: string;
+  relationPatient?: string;
+  santePerso?: string;
   score: number;
   urgency: string;
   bloc1Status: string;
   bloc2Status: string;
+  bloc3Status?: string;
+  bloc4Status?: string;
   source?: string;
 };
 
@@ -83,7 +86,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, error: "Corps de requête invalide" }, { status: 400 });
   }
 
-  const { email, phone, profession, diplomaYear, dpcFormations, eppActions, awareness, score, urgency, bloc1Status, bloc2Status, source } = payload;
+  const { email, phone, profession, diplomaYear, dpcFormations, eppActions, relationPatient, santePerso, score, urgency, bloc1Status, bloc2Status, bloc3Status, bloc4Status, source } = payload;
 
   // Validation email serveur
   const emailCheck = validateEmail(email ?? "");
