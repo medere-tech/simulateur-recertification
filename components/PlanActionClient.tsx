@@ -6,7 +6,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PROFESSIONS, ProfessionId } from "@/lib/professions";
-import { calculateScore, DpcFormations, DiplomaYear } from "@/lib/scoring";
+import { calculateScore, DpcFormations, EppActions, DiplomaYear } from "@/lib/scoring";
 import { GA4 } from "@/lib/ga4";
 import SiteHeader from "@/components/SiteHeader";
 import LeadForm from "@/components/LeadForm";
@@ -19,17 +19,18 @@ export default function PlanActionClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const profession   = searchParams.get("profession")   as ProfessionId | null;
-  const diplomaYear  = searchParams.get("diplomaYear")  as DiplomaYear  | null;
+  const profession    = searchParams.get("profession")    as ProfessionId | null;
+  const diplomaYear   = searchParams.get("diplomaYear")   as DiplomaYear  | null;
   const dpcFormations = searchParams.get("dpcFormations") as DpcFormations | null;
-  const awareness    = searchParams.get("awareness")    ?? "";
-  const confirmed    = searchParams.get("confirmed")    === "true";
+  const eppActions    = searchParams.get("eppActions")    as EppActions   | null;
+  const awareness     = searchParams.get("awareness")     ?? "";
+  const confirmed     = searchParams.get("confirmed")     === "true";
 
   const isValid =
-    !!profession && !!diplomaYear && !!dpcFormations && profession in PROFESSIONS;
+    !!profession && !!diplomaYear && !!dpcFormations && !!eppActions && profession in PROFESSIONS;
 
   const result = isValid
-    ? calculateScore(profession!, diplomaYear!, dpcFormations!)
+    ? calculateScore(profession!, diplomaYear!, dpcFormations!, eppActions!)
     : null;
 
   useEffect(() => {
@@ -51,9 +52,10 @@ export default function PlanActionClient() {
 
   // Query string transmis au formulaire pour construire l'URL confirmed
   const planParams = new URLSearchParams({
-    profession: profession!,
-    diplomaYear: diplomaYear!,
+    profession:    profession!,
+    diplomaYear:   diplomaYear!,
     dpcFormations: dpcFormations!,
+    eppActions:    eppActions!,
     ...(awareness ? { awareness } : {}),
   }).toString();
 
@@ -98,6 +100,7 @@ export default function PlanActionClient() {
               bloc2Status={bloc2Status}
               diplomaYear={diplomaYear!}
               dpcFormations={dpcFormations!}
+              eppActions={eppActions!}
               awareness={awareness}
               dimensionLabel={dimensionLabel}
               dimensionLabelPlural={dimensionLabelPlural}
@@ -126,6 +129,7 @@ function Ecran7({
   bloc2Status,
   diplomaYear,
   dpcFormations,
+  eppActions,
   awareness,
   dimensionLabel,
   dimensionLabelPlural,
@@ -141,6 +145,7 @@ function Ecran7({
   bloc2Status: string;
   diplomaYear: string;
   dpcFormations: string;
+  eppActions: string;
   awareness: string;
   dimensionLabel: "Bloc" | "Axe";
   dimensionLabelPlural: "Blocs" | "Axes";
@@ -195,6 +200,7 @@ function Ecran7({
           bloc2Status={bloc2Status}
           diplomaYear={diplomaYear}
           dpcFormations={dpcFormations}
+          eppActions={eppActions}
           awareness={awareness}
           accentColor={accentColor}
           textOnAccent={textOnAccent}

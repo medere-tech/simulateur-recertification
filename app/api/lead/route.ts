@@ -53,6 +53,7 @@ type LeadPayload = {
   profession: string;
   diplomaYear: string;
   dpcFormations: string;
+  eppActions?: string;
   awareness?: string;
   score: number;
   urgency: string;
@@ -82,7 +83,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, error: "Corps de requête invalide" }, { status: 400 });
   }
 
-  const { email, phone, profession, diplomaYear, dpcFormations, awareness, score, urgency, bloc1Status, bloc2Status, source } = payload;
+  const { email, phone, profession, diplomaYear, dpcFormations, eppActions, awareness, score, urgency, bloc1Status, bloc2Status, source } = payload;
 
   // Validation email serveur
   const emailCheck = validateEmail(email ?? "");

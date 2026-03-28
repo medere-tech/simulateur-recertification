@@ -10,6 +10,7 @@ import { PROFESSIONS, ProfessionId } from "@/lib/professions";
 import {
   calculateScore,
   DpcFormations,
+  EppActions,
   DiplomaYear,
   DimensionStatus,
 } from "@/lib/scoring";
@@ -45,20 +46,22 @@ export default function ResultatClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const profession = searchParams.get("profession") as ProfessionId | null;
-  const diplomaYear = searchParams.get("diplomaYear") as DiplomaYear | null;
+  const profession    = searchParams.get("profession") as ProfessionId | null;
+  const diplomaYear   = searchParams.get("diplomaYear") as DiplomaYear | null;
   const dpcFormations = searchParams.get("dpcFormations") as DpcFormations | null;
-  const awareness = searchParams.get("awareness") ?? "";
+  const eppActions    = searchParams.get("eppActions") as EppActions | null;
+  const awareness     = searchParams.get("awareness") ?? "";
 
   const isValid =
     !!profession &&
     !!diplomaYear &&
     !!dpcFormations &&
+    !!eppActions &&
     profession in PROFESSIONS;
 
   // Score calculé uniquement si params valides
   const result = isValid
-    ? calculateScore(profession!, diplomaYear!, dpcFormations!)
+    ? calculateScore(profession!, diplomaYear!, dpcFormations!, eppActions!)
     : null;
 
   // GA4 + redirect (toujours appelé, logique conditionnelle à l'intérieur)
@@ -92,9 +95,10 @@ export default function ResultatClient() {
 
   // Params transmis au plan d'action
   const planParams = new URLSearchParams({
-    profession: profession!,
-    diplomaYear: diplomaYear!,
+    profession:    profession!,
+    diplomaYear:   diplomaYear!,
     dpcFormations: dpcFormations!,
+    eppActions:    eppActions!,
     ...(awareness ? { awareness } : {}),
   }).toString();
 
@@ -172,6 +176,7 @@ export default function ResultatClient() {
                 score={0}
                 status="a_faire"
                 isNew
+                medereNote="1 formation Médéré disponible"
                 animDelay={300}
               />
               <BlocStatus

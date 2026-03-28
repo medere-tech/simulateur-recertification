@@ -1,6 +1,6 @@
 "use client";
 
-// State machine du simulateur - Écrans 2 à 5
+// State machine du simulateur - Écrans 2 à 6
 // Navigation : URL params portent tout l'état (shareable, browser back fonctionnel)
 // Couleur d'accent : dynamique selon la profession dès l'étape 2
 
@@ -14,8 +14,9 @@ import { ChevronLeftIcon } from "@/components/icons";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type DiplomaYear = "avant_2000" | "2000_2010" | "2011_2022" | "apres_2023";
+type DiplomaYear   = "avant_2000" | "2000_2010" | "2011_2022" | "apres_2023";
 type DpcFormations = "3_plus" | "1_ou_2" | "aucune" | "ne_sait_pas";
+type EppActions    = "2_plus" | "1" | "aucune" | "ne_sait_pas";
 
 // ─── Données par étape ────────────────────────────────────────────────────────
 
@@ -36,16 +37,23 @@ const DIPLOMA_CHOICES = [
 ];
 
 const DPC_CHOICES = [
-  { id: "3_plus",       label: "Oui, 3 ou plus" },
-  { id: "1_ou_2",       label: "Oui, 1 ou 2" },
-  { id: "aucune",       label: "Non, aucune" },
-  { id: "ne_sait_pas",  label: "Je ne sais pas" },
+  { id: "3_plus",      label: "Oui, 3 ou plus" },
+  { id: "1_ou_2",      label: "Oui, 1 ou 2" },
+  { id: "aucune",      label: "Non, aucune" },
+  { id: "ne_sait_pas", label: "Je ne sais pas" },
+];
+
+const EPP_CHOICES = [
+  { id: "2_plus",      label: "Oui, au moins 2 actions" },
+  { id: "1",           label: "Oui, 1 action" },
+  { id: "aucune",      label: "Non, aucune" },
+  { id: "ne_sait_pas", label: "Je ne sais pas" },
 ];
 
 const AWARENESS_CHOICES = [
-  { id: "connait_bien",    label: "Oui, je connais bien le sujet" },
-  { id: "entendu_parler",  label: "J'en ai entendu parler" },
-  { id: "pas_du_tout",     label: "Non, pas du tout" },
+  { id: "connait_bien",   label: "Oui, je connais bien le sujet" },
+  { id: "entendu_parler", label: "J'en ai entendu parler" },
+  { id: "pas_du_tout",    label: "Non, pas du tout" },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -65,10 +73,11 @@ export default function SimulateurClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const step = Number(searchParams.get("step") ?? "1");
-  const profession = searchParams.get("profession") as ProfessionId | null;
-  const diplomaYear = searchParams.get("diplomaYear") as DiplomaYear | null;
+  const step          = Number(searchParams.get("step") ?? "1");
+  const profession    = searchParams.get("profession") as ProfessionId | null;
+  const diplomaYear   = searchParams.get("diplomaYear") as DiplomaYear | null;
   const dpcFormations = searchParams.get("dpcFormations") as DpcFormations | null;
+  const eppActions    = searchParams.get("eppActions") as EppActions | null;
 
   // Validation : si params manquants pour une étape avancée, reset
   if (step >= 2 && !profession) {
@@ -83,6 +92,10 @@ export default function SimulateurClient() {
     router.replace(buildSimulateurUrl(3, { profession: profession!, diplomaYear: diplomaYear! }));
     return null;
   }
+  if (step >= 5 && !eppActions) {
+    router.replace(buildSimulateurUrl(4, { profession: profession!, diplomaYear: diplomaYear!, dpcFormations: dpcFormations! }));
+    return null;
+  }
 
   const accentColor = profession ? PROFESSIONS[profession].color : "#006E90";
   const profConfig  = profession ? PROFESSIONS[profession] : null;
@@ -90,23 +103,43 @@ export default function SimulateurClient() {
   // ── Handlers ────────────────────────────────────────────────────────────────
 
   function handleProfession(id: string) {
-    GA4.stepCompleted(1, id);
+    GA4.stepCompleted(1, id, "profession");
     router.push(buildSimulateurUrl(2, { profession: id }));
   }
 
   function handleDiplomaYear(id: string) {
-    GA4.stepCompleted(2, id);
+    GA4.stepCompleted(2, id, "diploma_year");
     router.push(buildSimulateurUrl(3, { profession: profession!, diplomaYear: id }));
   }
 
   function handleDpcFormations(id: string) {
-    GA4.stepCompleted(3, id);
-    router.push(buildSimulateurUrl(4, { profession: profession!, diplomaYear: diplomaYear!, dpcFormations: id }));
+    GA4.stepCompleted(3, id, "dpc_formations");
+    router.push(buildSimulateurUrl(4, {
+      profession:    profession!,
+      diplomaYear:   diplomaYear!,
+      dpcFormations: id,
+    }));
+  }
+
+  function handleEppActions(id: string) {
+    GA4.stepCompleted(4, id, "epp_actions");
+    router.push(buildSimulateurUrl(5, {
+      profession:    profession!,
+      diplomaYear:   diplomaYear!,
+      dpcFormations: dpcFormations!,
+      eppActions:    id,
+    }));
   }
 
   function handleAwareness(id: string) {
-    GA4.stepCompleted(4, id);
-    router.push(buildResultatUrl({ profession: profession!, diplomaYear: diplomaYear!, dpcFormations: dpcFormations!, awareness: id }));
+    GA4.stepCompleted(5, id, "awareness");
+    router.push(buildResultatUrl({
+      profession:    profession!,
+      diplomaYear:   diplomaYear!,
+      dpcFormations: dpcFormations!,
+      eppActions:    eppActions!,
+      awareness:     id,
+    }));
   }
 
   // ── Rendu ────────────────────────────────────────────────────────────────────
@@ -128,14 +161,14 @@ export default function SimulateurClient() {
 
       {/* ── Barre de progression ───────────────────────────────────────────── */}
       <div className="bg-white shadow-sm">
-        <ProgressBar currentStep={step} totalSteps={4} accentColor={accentColor} />
+        <ProgressBar currentStep={step} totalSteps={5} accentColor={accentColor} />
       </div>
 
       {/* ── Contenu - key={step} déclenche le fade-in à chaque changement ─── */}
       <main className="flex flex-1 flex-col items-center px-4 py-8 sm:px-6">
         <div key={step} className="w-full max-w-lg animate-fade-in">
 
-          {/* Bouton retour - step 1 : retour accueil, step 2+ : retour navigateur */}
+          {/* Bouton retour */}
           {step === 1 ? (
             <button
               onClick={() => router.push("/")}
@@ -173,18 +206,30 @@ export default function SimulateurClient() {
             />
           )}
 
-          {/* Étape 3 - Formations DPC */}
+          {/* Étape 3 - Formations DPC (Bloc 1) */}
           {step === 3 && (
             <QuestionCard
-              question="Avez-vous suivi des formations DPC ces 3 dernières années ?"
+              question="Combien de formations DPC avez-vous suivies depuis janvier 2023 ?"
+              subtitle="E-learning, classes virtuelles, présentiel — hors EPP et analyse de pratiques"
               choices={DPC_CHOICES}
               onSelect={handleDpcFormations}
               accentColor={accentColor}
             />
           )}
 
-          {/* Étape 4 - Connaissance des blocs/axes */}
+          {/* Étape 4 - EPP (Bloc 2) */}
           {step === 4 && (
+            <QuestionCard
+              question="Avez-vous participé à des actions d'EPP depuis janvier 2023 ?"
+              subtitle="Évaluation des pratiques professionnelles : audit clinique, analyse de pratiques, revue de morbi-mortalité, simulation..."
+              choices={EPP_CHOICES}
+              onSelect={handleEppActions}
+              accentColor={accentColor}
+            />
+          )}
+
+          {/* Étape 5 - Connaissance des blocs/axes */}
+          {step === 5 && (
             <QuestionCard
               question={awarenessQuestion}
               choices={AWARENESS_CHOICES}

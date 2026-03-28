@@ -163,6 +163,7 @@ function ChoiceButton({ choice, onSelect, accentColor }: ChoiceButtonProps) {
 
 type QuestionCardProps = {
   question: React.ReactNode;
+  subtitle?: string;
   choices: Choice[];
   onSelect: (id: string) => void;
   accentColor?: string;
@@ -171,6 +172,7 @@ type QuestionCardProps = {
 
 export default function QuestionCard({
   question,
+  subtitle,
   choices,
   onSelect,
   accentColor = "#006E90",
@@ -178,9 +180,12 @@ export default function QuestionCard({
 }: QuestionCardProps) {
   return (
     <div className="w-full">
-      <h2 className="mb-6 text-2xl font-bold leading-snug tracking-tight text-[#302D2D] sm:text-3xl">
+      <h2 className={`text-2xl font-bold leading-snug tracking-tight text-[#302D2D] sm:text-3xl ${subtitle ? "mb-2" : "mb-6"}`}>
         {question}
       </h2>
+      {subtitle && (
+        <p className="mb-5 text-sm font-light text-[#807778]">{subtitle}</p>
+      )}
 
       <div className="flex flex-col gap-3">
         {choices.map((choice) => (

@@ -4,8 +4,9 @@
 import type { ProfessionId } from "./professions";
 
 export type DpcFormations = "3_plus" | "1_ou_2" | "aucune" | "ne_sait_pas";
-export type DiplomaYear = "avant_2000" | "2000_2010" | "2011_2022" | "apres_2023";
-export type Urgency = "rouge" | "orange" | "vert";
+export type EppActions    = "2_plus" | "1" | "aucune" | "ne_sait_pas";
+export type DiplomaYear   = "avant_2000" | "2000_2010" | "2011_2022" | "apres_2023";
+export type Urgency       = "rouge" | "orange" | "vert";
 export type DimensionStatus = "valide" | "en_cours" | "a_faire";
 
 export type ScoreResult = {
@@ -21,17 +22,25 @@ export type ScoreResult = {
   bloc2Status: DimensionStatus;
 };
 
-// Actions brutes selon formations DPC déclarées
-const DPC_TO_ACTIONS: Record<DpcFormations, number> = {
-  "3_plus": 4,
-  "1_ou_2": 2,
-  "aucune": 0,
-  "ne_sait_pas": 1,
+// Bloc 1 — basé sur les formations DPC (Q3)
+const DPC_TO_BLOC1: Record<DpcFormations, number> = {
+  "3_plus":      2,
+  "1_ou_2":      1,
+  "aucune":      0,
+  "ne_sait_pas": 0,
+};
+
+// Bloc 2 — basé sur les actions EPP (Q4)
+const EPP_TO_BLOC2: Record<EppActions, number> = {
+  "2_plus":      2,
+  "1":           1,
+  "aucune":      0,
+  "ne_sait_pas": 0,
 };
 
 function toStatus(score: number, max: number): DimensionStatus {
   if (score >= max) return "valide";
-  if (score > 0) return "en_cours";
+  if (score > 0)    return "en_cours";
   return "a_faire";
 }
 
@@ -47,27 +56,17 @@ function getEcheance(profession: ProfessionId, diplomaYear: DiplomaYear): number
 export function calculateScore(
   profession: ProfessionId,
   diplomaYear: DiplomaYear,
-  dpcFormations: DpcFormations
+  dpcFormations: DpcFormations,
+  eppActions: EppActions = "aucune"
 ): ScoreResult {
-  const rawActions = DPC_TO_ACTIONS[dpcFormations];
-
-  let actions: number;
-  if (profession === "PED") {
-    // Pédiatrie : 2 DPC = 1 action de certification
-    actions = Math.floor(rawActions / 2);
-  } else {
-    actions = rawActions;
-  }
-
-  // RÈGLE FONDAMENTALE : Blocs/Axes 3 & 4 = TOUJOURS 0
-  const bloc1 = Math.min(actions, 2);
-  const bloc2 = Math.max(Math.min(actions - 2, 2), 0);
-  const bloc3 = 0;
-  const bloc4 = 0;
+  const bloc1 = DPC_TO_BLOC1[dpcFormations];
+  const bloc2 = EPP_TO_BLOC2[eppActions];
+  const bloc3 = 0; // Nouveau — Médéré propose 1 formation (Gestion de l'agressivité)
+  const bloc4 = 0; // Nouveau — hors catalogue
 
   const totalScore = bloc1 + bloc2 + bloc3 + bloc4;
-  const maxScore = 8;
-  const echeance = getEcheance(profession, diplomaYear);
+  const maxScore   = 8;
+  const echeance   = getEcheance(profession, diplomaYear);
 
   const urgency: Urgency =
     totalScore <= 2 ? "rouge" : totalScore <= 4 ? "orange" : "vert";

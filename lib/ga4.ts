@@ -22,10 +22,14 @@ export const GA4 = {
   simulatorStart: (source: string) =>
     track({ event: "simulator_start", params: { source } }),
 
-  stepCompleted: (stepNumber: number, stepValue: string) =>
+  stepCompleted: (stepNumber: number, stepValue: string, stepName?: string) =>
     track({
       event: "step_completed",
-      params: { step_number: stepNumber, step_value: stepValue },
+      params: {
+        step_number: stepNumber,
+        ...(stepName ? { step_name: stepName } : {}),
+        step_value: stepValue,
+      },
     }),
 
   resultViewed: (params: {

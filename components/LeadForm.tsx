@@ -84,6 +84,7 @@ type Props = {
   bloc2Status: string;
   diplomaYear: string;
   dpcFormations: string;
+  eppActions: string;
   awareness: string;
   accentColor: string;
   textOnAccent: string;
@@ -98,6 +99,7 @@ export default function LeadForm({
   bloc2Status,
   diplomaYear,
   dpcFormations,
+  eppActions,
   awareness,
   accentColor,
   textOnAccent,
@@ -144,6 +146,7 @@ export default function LeadForm({
           profession,
           diplomaYear,
           dpcFormations,
+          eppActions,
           awareness,
           score,
           urgency,
@@ -166,7 +169,7 @@ export default function LeadForm({
       fetch("/api/report", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, profession, diplomaYear, dpcFormations, awareness, score, urgency, bloc1Status, bloc2Status }),
+        body: JSON.stringify({ email, profession, diplomaYear, dpcFormations, eppActions, awareness, score, urgency, bloc1Status, bloc2Status }),
       }).catch(() => {/* silencieux - génération PDF non bloquante */});
 
       // ── 4. Redirect vers confirmation ───────────────────────────────────────

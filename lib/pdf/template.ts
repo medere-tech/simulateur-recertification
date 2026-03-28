@@ -221,7 +221,9 @@ function getStatusColor(status: string): string {
 }
 
 function getScore(status: string): string {
-  return status === 'valide' ? '2/2' : '0/2';
+  if (status === 'valide')   return '2/2';
+  if (status === 'en_cours') return '1/2';
+  return '0/2';
 }
 
 function getMonthYear(): string {
@@ -254,10 +256,10 @@ export function getReportHTML(data: ReportData): string {
 
   // Bloc statuses
   const blocs = [
-    { num: 1, name: prof.dimensions[0].name, status: getStatusLabel(data.bloc1Status), statusColor: getStatusColor(data.bloc1Status), score: getScore(data.bloc1Status), covered: true },
-    { num: 2, name: prof.dimensions[1].name, status: getStatusLabel(data.bloc2Status), statusColor: getStatusColor(data.bloc2Status), score: getScore(data.bloc2Status), covered: true },
-    { num: 3, name: prof.dimensions[2].name, status: 'Nouveau — À faire', statusColor: '#CC0000', score: '0/2', covered: false },
-    { num: 4, name: prof.dimensions[3].name, status: 'Nouveau — À faire', statusColor: '#CC0000', score: '0/2', covered: false },
+    { num: 1, name: prof.dimensions[0].name, status: getStatusLabel(data.bloc1Status), statusColor: getStatusColor(data.bloc1Status), score: getScore(data.bloc1Status), covered: true,  note: null },
+    { num: 2, name: prof.dimensions[1].name, status: getStatusLabel(data.bloc2Status), statusColor: getStatusColor(data.bloc2Status), score: getScore(data.bloc2Status), covered: true,  note: null },
+    { num: 3, name: prof.dimensions[2].name, status: 'Nouveau — À faire',              statusColor: '#CC0000',                        score: '0/2',                       covered: true,  note: '1 formation disponible' },
+    { num: 4, name: prof.dimensions[3].name, status: 'Nouveau — À faire',              statusColor: '#CC0000',                        score: '0/2',                       covered: false, note: null },
   ];
 
   return `<!DOCTYPE html>
@@ -570,6 +572,7 @@ export function getReportHTML(data: ReportData): string {
             </td>
             <td style="color:${b.statusColor};font-weight:600;font-size:11px;">
               ${b.status}${b.status === 'Validé' ? ' ✓' : ''}
+              ${b.note ? `<br/><span style="font-size:9px;color:#2DA131;font-weight:400;">● ${b.note}</span>` : ''}
             </td>
             <td style="color:${b.statusColor};font-size:14px;">
               ${b.score}
@@ -652,7 +655,9 @@ export function getReportHTML(data: ReportData): string {
               <span class="bloc-name">${b.name}</span>
             </td>
             <td style="color:${b.covered ? '#2DA131' : '#9C9494'};font-weight:${b.covered ? '600' : '400'};font-size:10.5px;">
-              ${b.covered ? 'Couvert par Médéré' : 'Hors catalogue'}
+              ${b.covered
+                ? (b.note ? `Couvert par Médéré (${b.note})` : 'Couvert par Médéré')
+                : 'Hors catalogue'}
             </td>
             <td style="font-size:10px;color:#686162;">
               2 actions min.
@@ -691,7 +696,7 @@ export function getReportHTML(data: ReportData): string {
     </h2>
 
     <p style="font-size:12px;font-weight:400;color:#686162;margin-bottom:20px;">
-      ${prof.terminologyPlural} 1 &amp; 2 — Pris en charge sans avance de frais via l'ANDPC
+      ${prof.terminologyPlural} 1, 2 &amp; 3 — Pris en charge sans avance de frais via l'ANDPC
     </p>
 
     <!-- Catalogue placeholder -->
@@ -705,7 +710,7 @@ export function getReportHTML(data: ReportData): string {
     </div>
 
     <p style="font-size:10.5px;color:#686162;margin:20px 0 8px;">
-      Nos formations pour les ${prof.terminologyPlural.toLowerCase()} 1 &amp; 2 couvrent :
+      Nos formations pour les ${prof.terminologyPlural.toLowerCase()} 1, 2 &amp; 3 couvrent :
     </p>
 
     <ul class="bullet-list">
@@ -716,6 +721,10 @@ export function getReportHTML(data: ReportData): string {
       <li>
         <span class="bullet-dot" style="background:${prof.color};"></span>
         <span>${prof.dimensions[1].name} — ${prof.terminology} 2</span>
+      </li>
+      <li>
+        <span class="bullet-dot" style="background:${prof.color};"></span>
+        <span>${prof.dimensions[2].name} — ${prof.terminology} 3 <span style="font-size:9.5px;color:#686162;">(Gestion de l'agressivité)</span></span>
       </li>
     </ul>
 

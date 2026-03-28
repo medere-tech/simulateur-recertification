@@ -52,7 +52,7 @@ export const PROFESSIONS: Record<ProfessionId, ProfessionConfig> = {
     dimensions: [
       { id: 1, name: "Connaissances et compétences", medereCovers: true },
       { id: 2, name: "Qualité des pratiques", medereCovers: true },
-      { id: 3, name: "Relation avec les patients", medereCovers: false },
+      { id: 3, name: "Relation avec les patients", medereCovers: true },
       { id: 4, name: "Santé personnelle du médecin", medereCovers: false },
     ],
   },
@@ -76,7 +76,7 @@ export const PROFESSIONS: Record<ProfessionId, ProfessionConfig> = {
     dimensions: [
       { id: 1, name: "Connaissances et compétences", medereCovers: true },
       { id: 2, name: "Qualité des pratiques", medereCovers: true },
-      { id: 3, name: "Relation avec les patients", medereCovers: false },
+      { id: 3, name: "Relation avec les patients", medereCovers: true },
       { id: 4, name: "Santé personnelle", medereCovers: false },
     ],
   },
@@ -99,7 +99,7 @@ export const PROFESSIONS: Record<ProfessionId, ProfessionConfig> = {
     dimensions: [
       { id: 1, name: "Connaissances et compétences", medereCovers: true },
       { id: 2, name: "Qualité des pratiques", medereCovers: true },
-      { id: 3, name: "Relation avec les patients", medereCovers: false },
+      { id: 3, name: "Relation avec les patients", medereCovers: true },
       { id: 4, name: "Santé personnelle", medereCovers: false },
     ],
   },
@@ -127,7 +127,7 @@ export const PROFESSIONS: Record<ProfessionId, ProfessionConfig> = {
       {
         id: 3,
         name: "Relation avec les patients et leurs représentants",
-        medereCovers: false,
+        medereCovers: true,
       },
       { id: 4, name: "Santé personnelle", medereCovers: false },
     ],
@@ -152,7 +152,7 @@ export const PROFESSIONS: Record<ProfessionId, ProfessionConfig> = {
     dimensions: [
       { id: 1, name: "Connaissances et compétences", medereCovers: true },
       { id: 2, name: "Qualité des pratiques", medereCovers: true },
-      { id: 3, name: "Relation avec les patients", medereCovers: false },
+      { id: 3, name: "Relation avec les patients", medereCovers: true },
       { id: 4, name: "Santé personnelle", medereCovers: false },
     ],
   },
@@ -175,7 +175,7 @@ export const PROFESSIONS: Record<ProfessionId, ProfessionConfig> = {
     dimensions: [
       { id: 1, name: "Connaissances et compétences", medereCovers: true },
       { id: 2, name: "Qualité des pratiques", medereCovers: true },
-      { id: 3, name: "Relation avec les patients", medereCovers: false },
+      { id: 3, name: "Relation avec les patients", medereCovers: true },
       { id: 4, name: "Santé personnelle", medereCovers: false },
     ],
   },

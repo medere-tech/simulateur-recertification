@@ -1,15 +1,15 @@
-// Barre de progression - Étape X sur 4
+// Barre de progression - Étape X sur 5
 // Segments colorés en accent de la profession
 
 type ProgressBarProps = {
-  currentStep: number;   // 1–4
-  totalSteps?: number;   // 4
+  currentStep: number;   // 1–5
+  totalSteps?: number;   // 5
   accentColor?: string;
 };
 
 export default function ProgressBar({
   currentStep,
-  totalSteps = 4,
+  totalSteps = 5,
   accentColor = "#006E90",
 }: ProgressBarProps) {
   return (

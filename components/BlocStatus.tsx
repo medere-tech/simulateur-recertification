@@ -46,6 +46,7 @@ type BlocStatusProps = {
   score: number;
   status: DimensionStatus;
   isNew?: boolean;
+  medereNote?: string; // ex: "1 formation Médéré disponible"
   animDelay?: number; // millisecondes - pour l'animation en cascade
 };
 
@@ -56,6 +57,7 @@ export default function BlocStatus({
   score,
   status,
   isNew = false,
+  medereNote,
   animDelay = 0,
 }: BlocStatusProps) {
   const cfg = STATUS_CONFIG[status];
@@ -81,7 +83,7 @@ export default function BlocStatus({
         </p>
         <p className="mt-0.5 text-xs text-[#686162]">
           {isNew
-            ? "Nouveau - créé par la certification périodique"
+            ? `Nouveau — À faire${medereNote ? ` · ${medereNote}` : ""}`
             : cfg.label}
         </p>
       </div>
