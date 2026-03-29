@@ -3,6 +3,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { generateReport } from "@/lib/pdf/generate";
+import { sendReportEmail } from "@/lib/email";
+import { CONFIG } from "@/lib/config";
 import type { ProfessionId } from "@/lib/professions";
 import type { DiplomaYear, DimensionStatus, Urgency } from "@/lib/scoring";
 
@@ -19,6 +21,7 @@ type ReportRequestBody = {
   bloc2Status: DimensionStatus;
   bloc3Status: DimensionStatus;
   bloc4Status: DimensionStatus;
+  sendEmail?: boolean;
 };
 
 const VALID_PROFESSIONS: ProfessionId[] = ["MG", "CD", "GO", "PED", "PSY", "AUTRE"];
@@ -87,7 +90,21 @@ export async function POST(req: NextRequest) {
     const dd = String(today.getDate()).padStart(2, "0");
     const filename = `diagnostic-certification-${body.profession.toLowerCase()}-${yyyy}${mm}${dd}.pdf`;
 
-    return NextResponse.json({ success: true, pdf, filename });
+    let pdfSent = false;
+    if (body.sendEmail && CONFIG.SMTP_ENABLED && body.email) {
+      const emailResult = await sendReportEmail({
+        to:          body.email,
+        profession:  body.profession,
+        pdfBuffer,
+        pdfFilename: filename,
+      });
+      pdfSent = emailResult.success;
+      if (!emailResult.success) {
+        console.error("[/api/report] SMTP error:", emailResult.error);
+      }
+    }
+
+    return NextResponse.json({ success: true, pdf, filename, pdfSent });
   } catch (err) {
     console.error("[/api/report] PDF generation error:", err);
     return NextResponse.json(

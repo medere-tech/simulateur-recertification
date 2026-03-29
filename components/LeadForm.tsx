@@ -178,7 +178,7 @@ export default function LeadForm({
       fetch("/api/report", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, profession, diplomaYear, dpcFormations, eppActions, relationPatient, santePerso, score, urgency, bloc1Status, bloc2Status, bloc3Status, bloc4Status }),
+        body: JSON.stringify({ email, profession, diplomaYear, dpcFormations, eppActions, relationPatient, santePerso, score, urgency, bloc1Status, bloc2Status, bloc3Status, bloc4Status, sendEmail: true }),
       }).catch(() => {/* silencieux - génération PDF non bloquante */});
 
       // ── 4. Redirect vers confirmation ───────────────────────────────────────

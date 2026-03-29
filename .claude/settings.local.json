@@ -9,7 +9,8 @@
       "Bash(npm run:*)",
       "Bash(curl:*)",
       "Bash(ls:*)",
-      "Bash(node -e \":*)"
+      "Bash(node -e \":*)",
+      "Bash(npm list:*)"
     ]
   }
 }

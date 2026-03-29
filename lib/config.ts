@@ -11,6 +11,9 @@ export const CONFIG = {
     process.env.NEXT_PUBLIC_HUBSPOT_MEETING_URL ||
     "https://meetings.hubspot.com/medere",
 
+  // SMTP - envoi du PDF par email (actif si SMTP_USER + SMTP_PASS définis)
+  SMTP_ENABLED: !!(process.env.SMTP_USER && process.env.SMTP_PASS),
+
   // Airtable - catalogue des formations
   AIRTABLE_API_KEY:    process.env.AIRTABLE_API_KEY    || "",
   AIRTABLE_BASE_ID:    process.env.AIRTABLE_BASE_ID    || "",
