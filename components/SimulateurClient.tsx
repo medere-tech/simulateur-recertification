@@ -48,21 +48,21 @@ const DPC_CHOICES = [
 const EPP_CHOICES = [
   { id: "2_plus",      label: "Oui, au moins 2 actions" },
   { id: "1",           label: "Oui, 1 action" },
-  { id: "aucune",      label: "Aucune" },
+  { id: "aucune",      label: "Non" },
   { id: "ne_sait_pas", label: "Je ne sais pas" },
 ];
 
 const RELATION_PATIENT_CHOICES = [
   { id: "2_plus",      label: "Oui, 2 actions ou plus" },
   { id: "1",           label: "Oui, 1 action" },
-  { id: "aucune",      label: "Aucune" },
+  { id: "aucune",      label: "Non" },
   { id: "ne_sait_pas", label: "Je ne sais pas" },
 ];
 
 const SANTE_PERSO_CHOICES = [
   { id: "2_plus",      label: "Oui, 2 actions ou plus" },
   { id: "1",           label: "Oui, 1 action" },
-  { id: "aucune",      label: "Aucune" },
+  { id: "aucune",      label: "Non" },
   { id: "ne_sait_pas", label: "Je ne sais pas" },
 ];
 
