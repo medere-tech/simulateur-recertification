@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import type { Formation } from '@/lib/airtable';
 
 // ─── Types ───────────────────────────────────────────────────────────
 export interface ReportData {
@@ -13,6 +14,7 @@ export interface ReportData {
   bloc2Status: string;
   bloc3Status: string;
   bloc4Status: string;
+  formations: Formation[];
 }
 
 // ─── Profession Config ───────────────────────────────────────────────
@@ -696,61 +698,93 @@ export function getReportHTML(data: ReportData): string {
       à votre certification
     </h2>
 
-    <p style="font-size:12px;font-weight:400;color:#686162;margin-bottom:20px;">
-      ${data.bloc3Status === 'a_faire'
-        ? `${prof.terminologyPlural} 1, 2 &amp; 3 — Pris en charge sans avance de frais via l'ANDPC`
-        : `${prof.terminologyPlural} 1 &amp; 2 — Pris en charge sans avance de frais via l'ANDPC`}
+    <!-- Mention ANDPC globale -->
+    <div class="info-box urgence" style="margin-bottom:20px;">
+      <p>
+        Toutes nos formations sont prises en charge sans avance de frais via l'ANDPC.
+        Vous êtes indemnisé pour le temps consacré à votre formation.
+      </p>
+    </div>
+
+    ${(() => {
+      const bloc1Fms = data.formations.filter(f => f.blocAxe === '1');
+      const bloc2Fms = data.formations.filter(f => f.blocAxe === '2');
+
+      const bloc1Needed = data.bloc1Status !== 'valide';
+      const bloc2Needed = data.bloc2Status !== 'valide';
+
+      function formationCard(f: Formation): string {
+        const dureeLabel = f.duree ? `${f.duree}` : '';
+        const link = f.url
+          ? `<a href="${f.url}" style="font-size:10px;color:#006E90;text-decoration:underline;">En savoir plus sur medere.fr</a>`
+          : '';
+        return `
+          <div style="border-left:3px solid ${prof.color};padding:8px 10px;margin-bottom:10px;background:#FAFAFA;border-radius:0 6px 6px 0;">
+            <p style="font-size:11px;font-weight:700;color:#302D2D;margin:0 0 3px;">${f.titre}</p>
+            <p style="font-size:10px;color:#686162;margin:0 0 4px;">${[f.format, dureeLabel].filter(Boolean).join(' · ')}</p>
+            ${link}
+          </div>`;
+      }
+
+      let html = '';
+
+      if (!bloc1Needed && !bloc2Needed) {
+        html += `
+          <div style="background:#F0FBF0;border:1px solid #2DA131;border-radius:8px;padding:14px 16px;margin-bottom:16px;">
+            <p style="font-size:11px;font-weight:600;color:#1A6E1E;margin:0;">
+              Félicitations, vos ${prof.terminologyPlural} 1 et 2 sont validés !
+              Consultez notre catalogue pour maintenir vos compétences.
+            </p>
+          </div>`;
+      } else {
+        if (bloc1Needed && bloc1Fms.length > 0) {
+          html += `
+            <p style="font-size:11px;font-weight:700;color:#302D2D;margin:0 0 8px;">
+              ${prof.terminology} 1 — ${prof.dimensions[0].name}
+            </p>`;
+          html += bloc1Fms.map(formationCard).join('');
+        }
+
+        if (bloc2Needed && bloc2Fms.length > 0) {
+          html += `
+            <p style="font-size:11px;font-weight:700;color:#302D2D;margin:${bloc1Needed && bloc1Fms.length ? '12px' : '0'} 0 8px;">
+              ${prof.terminology} 2 — ${prof.dimensions[1].name}
+            </p>`;
+          html += bloc2Fms.map(formationCard).join('');
+        }
+
+        if ((bloc1Needed && bloc1Fms.length === 0) || (bloc2Needed && bloc2Fms.length === 0)) {
+          html += `
+            <div class="info-box resume" style="margin-top:12px;">
+              <p>
+                Les formations pour votre profil (${prof.label}) seront disponibles prochainement.
+                Contactez-nous au <strong style="color:#FFFFFF;">01&nbsp;88&nbsp;33&nbsp;95&nbsp;28</strong>
+                ou sur <strong style="color:#FFFFFF;">medere.fr</strong>.
+              </p>
+            </div>`;
+        }
+      }
+
+      if (data.bloc3Status === 'a_faire') {
+        html += `
+          <p style="font-size:11px;font-weight:700;color:#302D2D;margin:12px 0 8px;">
+            ${prof.terminology} 3 — ${prof.dimensions[2].name}
+          </p>
+          <div style="border-left:3px solid ${prof.color};padding:8px 10px;margin-bottom:10px;background:#FAFAFA;border-radius:0 6px 6px 0;">
+            <p style="font-size:11px;font-weight:700;color:#302D2D;margin:0 0 3px;">Gestion de l'agressivité</p>
+            <p style="font-size:10px;color:#686162;margin:0 0 4px;">E-Learning</p>
+            <a href="https://www.medere.fr/formations" style="font-size:10px;color:#006E90;text-decoration:underline;">En savoir plus sur medere.fr</a>
+          </div>`;
+      }
+
+      return html;
+    })()}
+
+    <!-- CTA catalogue -->
+    <p style="font-size:10.5px;color:#686162;margin-top:16px;text-align:center;">
+      Découvrez l'ensemble de nos formations sur
+      <a href="https://medere.fr/formations" style="color:#006E90;text-decoration:underline;">medere.fr/formations</a>
     </p>
-
-    <!-- Catalogue placeholder -->
-    <div class="info-box resume">
-      <h3>Catalogue en cours de mise à jour</h3>
-      <p>
-        Nos formations adaptées à votre profil (${prof.label}) seront disponibles prochainement.
-        Consultez notre catalogue sur <strong style="color:#FFFFFF;">medere.fr</strong> ou contactez-nous au
-        <strong style="color:#FFFFFF;">01&nbsp;88&nbsp;33&nbsp;95&nbsp;28</strong> pour connaître les sessions ouvertes.
-      </p>
-    </div>
-
-    <p style="font-size:10.5px;color:#686162;margin:20px 0 8px;">
-      Nos formations couvrent :
-    </p>
-
-    <ul class="bullet-list">
-      <li>
-        <span class="bullet-dot" style="background:${prof.color};"></span>
-        <span>${prof.dimensions[0].name} — ${prof.terminology} 1</span>
-      </li>
-      <li>
-        <span class="bullet-dot" style="background:${prof.color};"></span>
-        <span>${prof.dimensions[1].name} — ${prof.terminology} 2</span>
-      </li>
-      ${data.bloc3Status === 'a_faire' ? `
-      <li>
-        <span class="bullet-dot" style="background:${prof.color};"></span>
-        <span>${prof.dimensions[2].name} — ${prof.terminology} 3 <span style="font-size:9.5px;color:#686162;">(Gestion de l'agressivité)</span></span>
-      </li>
-      ` : ''}
-    </ul>
-
-    <!-- ANDPC -->
-    <div class="info-box urgence">
-      <h3>Prise en charge ANDPC</h3>
-      <p>
-        Nos formations sont éligibles à votre certification périodique et financées par l'ANDPC —
-        sans avance de frais de votre part. Seuls le CNP et l'Ordre valident définitivement en fin de cycle.
-      </p>
-    </div>
-
-    <!-- Blocs 3&4 -->
-    <div class="info-box resume">
-      <h3>Pour les ${prof.terminologyPlural} 3 &amp; 4</h3>
-      <p>
-        Ces ${prof.terminologyPlural.toLowerCase()} étant entièrement nouveaux (aucune offre existante avant 2023),
-        Médéré développe actuellement des formations spécifiques.
-        Contactez-nous pour être informé en priorité.
-      </p>
-    </div>
   </div>
   <div class="page-footer">Médéré — Document confidentiel — ${monthYear}</div>
 </div>

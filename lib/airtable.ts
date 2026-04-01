@@ -16,7 +16,6 @@ const FIELD_IDS = {
   duree:          "fldSNZuA8JL91b3wA",
   format:         "fldhfMBFvr9PoB70E",
   url:            "fld9C15oF7RVDEVyO",
-  prix:           "fldJQgWNl3AL0ofSN",
   indemnisation:  "fldx61z8Mjr6ezyg8",
   professions:    "fld8TIxjDWBvTvTvX",
   statut:         "fld3NuuufLPPf3LgZ",
@@ -64,7 +63,6 @@ export type Formation = {
   duree:          string;
   format:         "E-Learning" | "Classe virtuelle" | "Présentiel" | "Hybride" | string;
   url:            string;
-  prix:           number | null;
   indemnisation:  number | null;
   blocAxe:        string | null; // "1" | "2" | "3" | "4"
   professions:    string[];      // IDs app : ["MG", "PED"]
@@ -108,7 +106,6 @@ function parseRecord(record: AirtableRecord): Formation {
     duree:         String(f[FIELD_IDS.duree]         ?? ""),
     format:        String(f[FIELD_IDS.format]        ?? ""),
     url:           String(f[FIELD_IDS.url]           ?? ""),
-    prix:          typeof f[FIELD_IDS.prix]          === "number" ? f[FIELD_IDS.prix] as number : null,
     indemnisation: typeof f[FIELD_IDS.indemnisation] === "number" ? f[FIELD_IDS.indemnisation] as number : null,
     blocAxe,
     professions,
@@ -183,4 +180,54 @@ export async function getAllFormations(): Promise<Formation[]> {
     + `)`;
 
   return fetchFormations(formula);
+}
+
+/**
+ * Sélectionne les formations à afficher dans le PDF selon les statuts des blocs.
+ * - "valide" (2/2) → 0 formation pour ce bloc
+ * - "en_cours" (1/2) → 1 formation max
+ * - "a_faire" (0/2) → 2 formations max, formats diversifiés
+ * Bloc 3 : géré en dur dans le template (Gestion de l'agressivité).
+ * Bloc 4 : pas de formation Médéré disponible.
+ */
+export function selectFormationsForReport(
+  allFormations: Formation[],
+  bloc1Status: string,
+  bloc2Status: string,
+  bloc3Status: string,
+  _bloc4Status: string,
+): Formation[] {
+  function countNeeded(status: string): number {
+    if (status === "valide")   return 0;
+    if (status === "en_cours") return 1;
+    return 2; // a_faire
+  }
+
+  function pickForBloc(pool: Formation[], count: number): Formation[] {
+    if (count === 0 || pool.length === 0) return [];
+    if (count === 1) return [pool[0]];
+
+    // Diversifier : 1ère E-Learning, 2ème format différent
+    const elearning = pool.filter((f) => f.format === "E-Learning");
+    const other     = pool.filter((f) => f.format !== "E-Learning");
+
+    if (elearning.length > 0 && other.length > 0) {
+      return [elearning[0], other[0]];
+    }
+    return pool.slice(0, 2);
+  }
+
+  const result: Formation[] = [];
+
+  result.push(...pickForBloc(allFormations.filter((f) => f.blocAxe === "1"), countNeeded(bloc1Status)));
+  result.push(...pickForBloc(allFormations.filter((f) => f.blocAxe === "2"), countNeeded(bloc2Status)));
+
+  // Bloc 3 : mention "Gestion de l'agressivité" déjà codée en dur dans le template
+  // Ne rien ajouter ici pour éviter la duplication.
+
+  // Bloc 4 : pas encore de catalogue Médéré — ignoré
+
+  void bloc3Status; // utilisé indirectement via le template
+
+  return result;
 }

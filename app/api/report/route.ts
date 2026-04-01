@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { generateReport } from "@/lib/pdf/generate";
 import { sendReportEmail } from "@/lib/email";
 import { CONFIG } from "@/lib/config";
+import { getFormationsByProfession, selectFormationsForReport } from "@/lib/airtable";
 import type { ProfessionId } from "@/lib/professions";
 import type { DiplomaYear, DimensionStatus, Urgency } from "@/lib/scoring";
 
@@ -69,17 +70,27 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    const allFormations = await getFormationsByProfession(body.profession);
+    const formations = selectFormationsForReport(
+      allFormations,
+      body.bloc1Status,
+      body.bloc2Status,
+      body.bloc3Status,
+      body.bloc4Status,
+    );
+
     const pdfBuffer = await generateReport({
-      profession:   body.profession,
-      diplomaYear:  body.diplomaYear,
+      profession:    body.profession,
+      diplomaYear:   body.diplomaYear,
       dpcFormations: body.dpcFormations ?? "",
-      email:        body.email ?? "",
-      score:        body.score,
-      urgency:      body.urgency,
-      bloc1Status:  body.bloc1Status,
-      bloc2Status:  body.bloc2Status,
-      bloc3Status:  body.bloc3Status,
-      bloc4Status:  body.bloc4Status,
+      email:         body.email ?? "",
+      score:         body.score,
+      urgency:       body.urgency,
+      bloc1Status:   body.bloc1Status,
+      bloc2Status:   body.bloc2Status,
+      bloc3Status:   body.bloc3Status,
+      bloc4Status:   body.bloc4Status,
+      formations,
     });
 
     const pdf = pdfBuffer.toString("base64");
