@@ -15,6 +15,14 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+
+  // Externalise les packages natifs lourds du côté serveur
+  serverExternalPackages: ["@sparticuz/chromium", "puppeteer-core"],
+
+  // Force Vercel à inclure les binaires Chromium dans le bundle /api/report
+  outputFileTracingIncludes: {
+    "/api/report": ["./node_modules/@sparticuz/chromium/**/*"],
+  },
 };
 
 export default nextConfig;
