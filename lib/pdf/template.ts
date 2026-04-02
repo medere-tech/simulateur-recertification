@@ -371,7 +371,7 @@ export function getReportHTML(data: ReportData): string {
   }
   .info-box.urgence::before {
     content:'BON À SAVOIR';
-    width:105px;
+    width:90px;
     display:block;
     font-size:8px;
     font-weight:700;
@@ -380,7 +380,7 @@ export function getReportHTML(data: ReportData): string {
     color:#000000;
     background:#ffffff;
     padding:5px;
-    border-radius:10px;
+    border-radius:8px;
     text-transform:uppercase;
     margin-bottom:8px;
   }
