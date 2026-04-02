@@ -41,7 +41,7 @@ const PROFESSIONS: Record<string, {
       { name: 'Relation avec les patients' },
       { name: 'Santé personnelle du médecin' },
     ],
-    constraint: '18 pratiques sont exclues (homéopathie, ostéopathie, naturopathie, acupuncture…)',
+    constraint: 'Les actions en lien avec les pratiques suivantes ne peuvent pas être prises en compte dans la démarche de certification en médecine générale\u00a0: acupuncture, aromathérapie, art-thérapie, auriculothérapie, biologie totale, chiropraxie, décodage biologique, fleurs de Bach, homéopathie, iridologie, jeûne à visée préventive ou thérapeutique, magnétisme, médecine anti-âge, médecine esthétique, mésothérapie, moxibustion, musicothérapie, naturopathie, ostéopathie, phytothérapie, réflexologie, sylvothérapie, zoothérapie.',
     annexe: 'Annexe 1',
     cycleDuration: 9,
   },
@@ -194,6 +194,16 @@ function getLogoBase64(): string {
     return '';
   }
 }
+
+// ─── CNP par profession ───────────────────────────────────────────────
+const CNP_NAMES: Record<string, string> = {
+  MG:    'Collège de la Médecine Générale (CMG)',
+  CD:    'CNP des chirurgiens-dentistes',
+  GO:    'CNP de gynécologie-obstétrique',
+  PED:   'CNP de pédiatrie',
+  PSY:   'CNP de psychiatrie',
+  AUTRE: 'votre Conseil National Professionnel (CNP)',
+};
 
 // ─── Helpers ─────────────────────────────────────────────────────────
 function getDeadlineYear(data: ReportData): number {
@@ -700,9 +710,15 @@ export function getReportHTML(data: ReportData): string {
 
     <!-- Mention ANDPC globale -->
     <div class="info-box urgence" style="margin-bottom:20px;">
+      <h3>Prise en charge ANDPC</h3>
       <p>
-        Toutes nos formations sont prises en charge sans avance de frais via l'ANDPC.
-        Vous êtes indemnisé pour le temps consacré à votre formation.
+        Nos formations sont éligibles à votre certification périodique et sont financées par l'ANDPC,
+        sans avance de frais de votre part.
+        Toutes nos formations validées par l'ANDPC sont reconnues pour votre certification périodique.
+        Certaines formations hors DPC doivent être validées par votre ${CNP_NAMES[data.profession] || CNP_NAMES.AUTRE}
+        pour pouvoir faire partie de votre certification périodique.
+        Votre Ordre valide définitivement votre certification en fin de période\u00a0:
+        en ${deadline} dans votre cas.
       </p>
     </div>
 
@@ -826,14 +842,14 @@ export function getReportHTML(data: ReportData): string {
       </li>
       <li>
         <span class="bullet-dot" style="background:${prof.color};"></span>
-        <span>Pris en charge sans avance de frais — pas un centime à avancer</span>
+        <span>Formations indemnisées — vous êtes rémunéré pour le temps consacré</span>
       </li>
     </ul>
 
     <!-- Encadré urgence -->
     <div class="info-box urgence">
       <p style="font-weight:600;font-size:11.5px;color:#302D2D;">
-        Chaque semaine qui passe = une place en moins + un risque de financement personnel en plus.
+        Actuellement l'ANDPC vous permet d'avoir une formation prise en charge sans avance de frais et avec une indemnisation du temps passé en formation.
       </p>
     </div>
 
@@ -852,8 +868,7 @@ export function getReportHTML(data: ReportData): string {
     <div class="info-box urgence">
       <p style="font-weight:600;font-size:10.5px;color:#CC0000;">
         Rappel réglementaire : en cas de non-respect de vos obligations de certification périodique,
-        votre Ordre peut engager une procédure disciplinaire. Ce document vous aide à anticiper —
-        agissez maintenant.
+        votre Ordre peut engager une procédure disciplinaire. Ce document vous aide à anticiper, agissez maintenant\u00a0!
       </p>
     </div>
   </div>
@@ -877,7 +892,7 @@ export function getReportHTML(data: ReportData): string {
 
     <p style="font-size:11px;font-style:italic;color:#554F4F;line-height:1.6;margin-bottom:24px;">
       Médéré est le seul organisme de formation fondé et dirigé par un médecin,
-      le Dr&nbsp;Harry Sitbon, qui ne vend que des formations conformes aux
+      le Dr&nbsp;Harry Sitbon, qui ne propose que des formations conformes aux
       référentiels officiels de certification périodique.
     </p>
 
