@@ -603,7 +603,7 @@ export function getReportHTML(data: ReportData): string {
       <p>
         Les ${prof.terminologyPlural} 3 &amp; 4 sont entièrement nouveaux dans ce cycle.
         Tous les praticiens partent de zéro pour ces 4 actions.
-        Médéré ne propose pas encore de formations pour ces ${prof.terminologyPlural.toLowerCase()} sauf pour la formation sur l'agressivité (${prof.terminologyPlural.toLowerCase()}).
+        Médéré ne propose pas encore de formations pour ces ${prof.terminologyPlural.toLowerCase()} sauf pour la formation sur l'agressivité (${prof.terminologyPlural.toLowerCase()} 3).
       </p>
     </div>
   </div>
