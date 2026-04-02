@@ -842,7 +842,7 @@ export function getReportHTML(data: ReportData): string {
       </li>
       <li>
         <span class="bullet-dot" style="background:${prof.color};"></span>
-        <span>Formations indemnisées : vous êtes rémunéré pour le temps consacré</span>
+        <span>Formations indemnisées - vous êtes rémunéré pour le temps consacré</span>
       </li>
     </ul>
 
