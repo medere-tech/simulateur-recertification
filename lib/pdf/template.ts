@@ -371,15 +371,16 @@ export function getReportHTML(data: ReportData): string {
   }
   .info-box.urgence::before {
     content:'BON À SAVOIR';
-    width:110px;
+    width:105px;
     display:block;
     font-size:8px;
     font-weight:700;
+    text-align:center;
     letter-spacing:1.5px;
     color:#000000;
     background:#ffffff;
     padding:5px;
-    border-radius:0 6px 6px 0;
+    border-radius:10px;
     text-transform:uppercase;
     margin-bottom:8px;
   }
@@ -605,7 +606,7 @@ export function getReportHTML(data: ReportData): string {
       <p>
         Les ${prof.terminologyPlural} 3 &amp; 4 sont entièrement nouveaux dans ce cycle.
         Tous les praticiens partent de zéro pour ces 4 actions.
-        Médéré ne propose pas encore de formations pour ces ${prof.terminologyPlural.toLowerCase()} sauf pour la formation sur l'agressivité (${prof.terminologyPlural.toLowerCase()} 3).
+        Médéré ne propose pas encore de formations pour ces ${prof.terminologyPlural.toLowerCase()} sauf une formation sur l'agressivité des patients et de leur entourage (${prof.terminologyPlural.toLowerCase()} 3).
       </p>
     </div>
   </div>
