@@ -30,10 +30,10 @@ export async function sendReportEmail(params: SendReportEmailParams): Promise<Se
 Suite à votre diagnostic sur notre simulateur de certification périodique, vous trouverez en pièce jointe votre rapport personnalisé.
 
 Ce document synthétise :
-— Votre score actuel sur les 8 actions requises
-— Le détail par bloc de votre situation
-— Les formations Médéré éligibles à votre certification
-— Les échéances et les modalités de prise en charge ANDPC
+- Votre score actuel sur les 8 actions requises
+- Le détail par bloc de votre situation
+- Les formations Médéré éligibles à votre certification
+- Les échéances et les modalités de prise en charge ANDPC
 
 Si vous souhaitez être accompagné dans votre démarche de certification, notre équipe est disponible pour en discuter :
 
@@ -41,12 +41,12 @@ Tél. : 01 88 33 95 28
 Email : contact@medere.fr
 
 Vous pouvez également réserver un créneau directement :
-https://meetings-eu1.hubspot.com/dethie
+https://meetings-eu1.hubspot.com/
 
 ${closing}
 
 L'équipe Médéré
-Organisme de formation DPC n°9262 — Qualiopi certifié
+Organisme de formation DPC n°9262 - Qualiopi certifié
 medere.fr
 
 ---
@@ -67,7 +67,7 @@ Ce document est basé sur l'arrêté du 26 février 2026 (NOR : SFHH2605575A). I
     await transporter.sendMail({
       from:    `"Médéré" <${process.env.EMAIL_FROM || "contact@medere.fr"}>`,
       to:      params.to,
-      subject: "Votre diagnostic certification périodique — Médéré",
+      subject: "🎉​ Votre diagnostic certification périodique - Médéré",
       text:    emailBody,
       attachments: [
         {

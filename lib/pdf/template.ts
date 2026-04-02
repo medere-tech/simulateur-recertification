@@ -130,7 +130,7 @@ const PROFESSIONS: Record<string, {
 // ─── Urgency Config ──────────────────────────────────────────────────
 const URGENCY_CONFIG: Record<string, { label: string; color: string; bgLight: string }> = {
   rouge: { label: 'Situation critique', color: '#CC0000', bgLight: '#FFF0F0' },
-  orange: { label: 'En cours — à compléter', color: '#EA6C00', bgLight: '#FFF5EB' },
+  orange: { label: 'En cours - à compléter', color: '#EA6C00', bgLight: '#FFF5EB' },
   vert: { label: 'Bien avancé', color: '#2DA131', bgLight: '#F0FFF0' },
 };
 
@@ -358,7 +358,7 @@ export function getReportHTML(data: ReportData): string {
   h3 { font-size:13px; font-weight:600; color:#494343; margin-bottom:6px; }
   p, .body-text { font-size:10.5px; font-weight:400; color:#554F4F; line-height:1.6; }
 
-  /* ── Info Box — CSS pur ── */
+  /* ── Info Box - CSS pur ── */
   .info-box {
     width:100%;
     margin:12px 0;
@@ -462,7 +462,7 @@ export function getReportHTML(data: ReportData): string {
     color:#FFFFFF;
   }
 
-  /* ── CTA Block — CSS pur ── */
+  /* ── CTA Block - CSS pur ── */
   .cta-block {
     border-radius:12px;
     padding:28px 32px;
@@ -483,7 +483,7 @@ export function getReportHTML(data: ReportData): string {
 <body>
 
 <!-- ══════════════════════════════════════════════════════════════════ -->
-<!-- PAGE 1 — COUVERTURE                                              -->
+<!-- PAGE 1 - COUVERTURE                                              -->
 <!-- ══════════════════════════════════════════════════════════════════ -->
 <div class="page">
   <img src="${svgCover}" class="page-bg" alt="" />
@@ -521,16 +521,16 @@ export function getReportHTML(data: ReportData): string {
 
     <!-- Confidentiel -->
     <p style="font-size:9px;font-weight:300;color:#9C9494;text-align:center;margin-bottom:40px;">
-      Document personnalisé — Confidentiel
+      Document personnalisé - Confidentiel
     </p>
   </div>
 
-  <div class="page-footer">Médéré — Document confidentiel — ${monthYear}</div>
+  <div class="page-footer">Médéré - Document confidentiel - ${monthYear}</div>
 </div>
 
 
 <!-- ══════════════════════════════════════════════════════════════════ -->
-<!-- PAGE 2 — VOTRE DIAGNOSTIC                                        -->
+<!-- PAGE 2 - VOTRE DIAGNOSTIC                                        -->
 <!-- ══════════════════════════════════════════════════════════════════ -->
 <div class="page">
   <img src="${svgPageH2}" class="page-bg" alt="" />
@@ -565,7 +565,7 @@ export function getReportHTML(data: ReportData): string {
       Vous avez jusqu'en <strong>${deadline}</strong> pour compléter vos 8 actions
     </p>
 
-    <!-- Bloc table — tableau-rapport.svg background -->
+    <!-- Bloc table - tableau-rapport.svg background -->
     <div class="table-wrapper">
       <img src="${svgTableau}" class="table-bg" alt="" />
       <table class="data-table">
@@ -605,12 +605,12 @@ export function getReportHTML(data: ReportData): string {
       </p>
     </div>
   </div>
-  <div class="page-footer">Médéré — Document confidentiel — ${monthYear}</div>
+  <div class="page-footer">Médéré - Document confidentiel - ${monthYear}</div>
 </div>
 
 
 <!-- ══════════════════════════════════════════════════════════════════ -->
-<!-- PAGE 3 — CE QUE LE RÉFÉRENTIEL EXIGE                             -->
+<!-- PAGE 3 - CE QUE LE RÉFÉRENTIEL EXIGE                             -->
 <!-- ══════════════════════════════════════════════════════════════════ -->
 <div class="page">
   <img src="${svgPageH2}" class="page-bg" alt="" />
@@ -644,7 +644,7 @@ export function getReportHTML(data: ReportData): string {
 
     <!-- Blocs 3 & 4 nouveaux -->
     <div class="info-box urgence">
-      <h3>${prof.terminologyPlural} 3 et 4 — 100&nbsp;% nouveaux</h3>
+      <h3>${prof.terminologyPlural} 3 et 4 - 100&nbsp;% nouveaux</h3>
       <p>
         Les ${prof.terminologyPlural} 3 et 4 sont entièrement nouveaux.
         Aucune formation DPC antérieure à 2023 ne les couvre.
@@ -656,7 +656,7 @@ export function getReportHTML(data: ReportData): string {
       Détail des 4 ${prof.terminologyPlural.toLowerCase()} pour les ${prof.label}s :
     </p>
 
-    <!-- Table détail — tableau-rapport.svg -->
+    <!-- Table détail - tableau-rapport.svg -->
     <div class="table-wrapper">
       <img src="${svgTableau}" class="table-bg" alt="" />
       <table class="data-table">
@@ -682,15 +682,15 @@ export function getReportHTML(data: ReportData): string {
     </div>
 
     <p style="font-size:8.5px;font-weight:300;color:#9C9494;margin-top:12px;">
-      Référence : Arrêté du 26 février 2026 — NOR&nbsp;: SFHH2605575A — ${prof.annexe}
+      Référence : Arrêté du 26 février 2026 - NOR&nbsp;: SFHH2605575A - ${prof.annexe}
     </p>
   </div>
-  <div class="page-footer">Médéré — Document confidentiel — ${monthYear}</div>
+  <div class="page-footer">Médéré - Document confidentiel - ${monthYear}</div>
 </div>
 
 
 <!-- ══════════════════════════════════════════════════════════════════ -->
-<!-- PAGE 4 — FORMATIONS MÉDÉRÉ                                        -->
+<!-- PAGE 4 - FORMATIONS MÉDÉRÉ                                        -->
 <!-- ══════════════════════════════════════════════════════════════════ -->
 <div class="page">
   <img src="${svgPageH2}" class="page-bg" alt="" />
@@ -756,7 +756,7 @@ export function getReportHTML(data: ReportData): string {
         if (bloc1Needed && bloc1Fms.length > 0) {
           html += `
             <p style="font-size:11px;font-weight:700;color:#302D2D;margin:0 0 8px;">
-              ${prof.terminology} 1 — ${prof.dimensions[0].name}
+              ${prof.terminology} 1 - ${prof.dimensions[0].name}
             </p>`;
           html += bloc1Fms.map(formationCard).join('');
         }
@@ -764,7 +764,7 @@ export function getReportHTML(data: ReportData): string {
         if (bloc2Needed && bloc2Fms.length > 0) {
           html += `
             <p style="font-size:11px;font-weight:700;color:#302D2D;margin:${bloc1Needed && bloc1Fms.length ? '12px' : '0'} 0 8px;">
-              ${prof.terminology} 2 — ${prof.dimensions[1].name}
+              ${prof.terminology} 2 - ${prof.dimensions[1].name}
             </p>`;
           html += bloc2Fms.map(formationCard).join('');
         }
@@ -784,7 +784,7 @@ export function getReportHTML(data: ReportData): string {
       if (data.bloc3Status === 'a_faire') {
         html += `
           <p style="font-size:11px;font-weight:700;color:#302D2D;margin:12px 0 8px;">
-            ${prof.terminology} 3 — ${prof.dimensions[2].name}
+            ${prof.terminology} 3 - ${prof.dimensions[2].name}
           </p>
           <div style="border-left:3px solid ${prof.color};padding:8px 10px;margin-bottom:10px;background:#FAFAFA;border-radius:0 6px 6px 0;">
             <p style="font-size:11px;font-weight:700;color:#302D2D;margin:0 0 3px;">Gestion de l'agressivité</p>
@@ -802,12 +802,12 @@ export function getReportHTML(data: ReportData): string {
       <a href="https://medere.fr/formations" style="color:#006E90;text-decoration:underline;">medere.fr/formations</a>
     </p>
   </div>
-  <div class="page-footer">Médéré — Document confidentiel — ${monthYear}</div>
+  <div class="page-footer">Médéré - Document confidentiel - ${monthYear}</div>
 </div>
 
 
 <!-- ══════════════════════════════════════════════════════════════════ -->
-<!-- PAGE 5 — POURQUOI AGIR EN 2026                                    -->
+<!-- PAGE 5 - POURQUOI AGIR EN 2026                                    -->
 <!-- ══════════════════════════════════════════════════════════════════ -->
 <div class="page">
   <img src="${svgPageH2}" class="page-bg" alt="" />
@@ -823,7 +823,7 @@ export function getReportHTML(data: ReportData): string {
     <h2>Pourquoi agir en 2026</h2>
 
     <p style="margin-bottom:16px;">
-      La certification périodique n'est pas une recommandation — c'est une obligation légale.
+      La certification périodique n'est pas une recommandation, c'est une obligation légale.
       Voici pourquoi ne pas attendre :
     </p>
 
@@ -842,7 +842,7 @@ export function getReportHTML(data: ReportData): string {
       </li>
       <li>
         <span class="bullet-dot" style="background:${prof.color};"></span>
-        <span>Formations indemnisées — vous êtes rémunéré pour le temps consacré</span>
+        <span>Formations indemnisées : vous êtes rémunéré pour le temps consacré</span>
       </li>
     </ul>
 
@@ -859,7 +859,7 @@ export function getReportHTML(data: ReportData): string {
       <p>
         L'ANDPC attribue les budgets en début d'année civile. Une fois les enveloppes épuisées,
         toute formation réalisée reste à votre charge. Les places dans les sessions éligibles sont
-        limitées et s'épuisent rapidement — particulièrement pour les spécialités comme la pédiatrie
+        limitées et s'épuisent rapidement - particulièrement pour les spécialités comme la pédiatrie
         et la psychiatrie.
       </p>
     </div>
@@ -872,12 +872,12 @@ export function getReportHTML(data: ReportData): string {
       </p>
     </div>
   </div>
-  <div class="page-footer">Médéré — Document confidentiel — ${monthYear}</div>
+  <div class="page-footer">Médéré - Document confidentiel - ${monthYear}</div>
 </div>
 
 
 <!-- ══════════════════════════════════════════════════════════════════ -->
-<!-- PAGE 6 — À PROPOS + CTA                                          -->
+<!-- PAGE 6 - À PROPOS + CTA                                          -->
 <!-- ══════════════════════════════════════════════════════════════════ -->
 <div class="page">
   <img src="${svgPageNormal}" class="page-bg" alt="" />
@@ -904,7 +904,7 @@ export function getReportHTML(data: ReportData): string {
         <circle cx="12" cy="12" r="11" fill="${prof.color}" opacity="0.12"/>
         <path d="M7 12.5L10.5 16L17 9" stroke="${prof.color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
-      <span class="check-text">Comité scientifique identifié — fondateur médecin (Dr Harry Sitbon)</span>
+      <span class="check-text">Comité scientifique identifié - fondateur médecin (Dr Harry Sitbon)</span>
     </div>
     <div class="check-item">
       <svg class="check-icon" viewBox="0 0 24 24" fill="none">
@@ -925,7 +925,7 @@ export function getReportHTML(data: ReportData): string {
         <circle cx="12" cy="12" r="11" fill="${prof.color}" opacity="0.12"/>
         <path d="M7 12.5L10.5 16L17 9" stroke="${prof.color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
-      <span class="check-text">Méthodes HAS de référence — Qualiopi certifié</span>
+      <span class="check-text">Méthodes HAS de référence - Qualiopi certifié</span>
     </div>
 
     <!-- Bannière CTA -->
@@ -937,12 +937,12 @@ export function getReportHTML(data: ReportData): string {
 
     <!-- Legal -->
     <p style="font-size:7.5px;font-weight:300;color:#9C9494;text-align:center;line-height:1.5;">
-      Basé sur l'arrêté du 26 février 2026 — NOR&nbsp;: SFHH2605575A.
+      Basé sur l'arrêté du 26 février 2026 - NOR&nbsp;: SFHH2605575A.
       Ce document est une estimation indicative. La validation finale de votre certification
       est prononcée par votre Ordre professionnel.
     </p>
   </div>
-  <div class="page-footer">Médéré — Document confidentiel — ${monthYear}</div>
+  <div class="page-footer">Médéré - Document confidentiel - ${monthYear}</div>
 </div>
 
 </body>
