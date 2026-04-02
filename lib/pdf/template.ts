@@ -376,6 +376,8 @@ export function getReportHTML(data: ReportData): string {
     font-weight:700;
     letter-spacing:1.5px;
     color:#9C9494;
+    background:#ffffff;
+    padding:5px;
     text-transform:uppercase;
     margin-bottom:8px;
   }
@@ -385,7 +387,7 @@ export function getReportHTML(data: ReportData): string {
     background:#006E90;
   }
   .info-box.resume h3 { color:#FFFFFF; font-size:11.5px; margin-bottom:6px; }
-  .info-box.resume p { color:rgba(255,255,255,0.88); font-size:10px; }
+  .info-box.resume p { color:rgb(255, 255, 255); font-size:10px; }
 
   /* ── Table with SVG background ── */
   .table-wrapper {
@@ -601,7 +603,7 @@ export function getReportHTML(data: ReportData): string {
       <p>
         Les ${prof.terminologyPlural} 3 &amp; 4 sont entièrement nouveaux dans ce cycle.
         Tous les praticiens partent de zéro pour ces 4 actions.
-        Médéré ne propose pas encore de formations pour ces ${prof.terminologyPlural.toLowerCase()}.
+        Médéré ne propose pas encore de formations pour ces ${prof.terminologyPlural.toLowerCase()} sauf pour la formation sur l'agressivité (${prof.terminologyPlural.toLowerCase()}).
       </p>
     </div>
   </div>
@@ -846,13 +848,6 @@ export function getReportHTML(data: ReportData): string {
       </li>
     </ul>
 
-    <!-- Encadré urgence -->
-    <div class="info-box urgence">
-      <p style="font-weight:600;font-size:11.5px;color:#302D2D;">
-        Actuellement l'ANDPC vous permet d'avoir une formation prise en charge sans avance de frais et avec une indemnisation du temps passé en formation.
-      </p>
-    </div>
-
     <!-- Calendrier ANDPC -->
     <div class="info-box resume">
       <h3>Le calendrier ANDPC en pratique</h3>
@@ -866,7 +861,7 @@ export function getReportHTML(data: ReportData): string {
 
     <!-- Rappel réglementaire -->
     <div class="info-box urgence">
-      <p style="font-weight:600;font-size:10.5px;color:#CC0000;">
+      <p style="font-weight:600;font-size:10.5px;color:#cc0000;">
         Rappel réglementaire : en cas de non-respect de vos obligations de certification périodique,
         votre Ordre peut engager une procédure disciplinaire. Ce document vous aide à anticiper, agissez maintenant\u00a0!
       </p>
