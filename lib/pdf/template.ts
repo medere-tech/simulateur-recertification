@@ -371,13 +371,15 @@ export function getReportHTML(data: ReportData): string {
   }
   .info-box.urgence::before {
     content:'BON À SAVOIR';
+    width:110px;
     display:block;
     font-size:8px;
     font-weight:700;
     letter-spacing:1.5px;
-    color:#9C9494;
+    color:#000000;
     background:#ffffff;
     padding:5px;
+    border-radius:0 6px 6px 0;
     text-transform:uppercase;
     margin-bottom:8px;
   }
