@@ -508,8 +508,8 @@ export function getReportHTML(data: ReportData): string {
          alt="Médéré"/>
 
     <!-- Titre -->
-    <h1 style="font-size:38px;text-align:center;margin-bottom:4px;"><span style="font-family:'Aileron';">Votre </span><span style="font-family:'Aileron-BoldItalic';">diagnostic</span></h1>
-    <h1 style="font-size:38px;text-align:center;margin-bottom:16px;"><span style="font-family:'Aileron';">certification périodique</span></h1>
+    <h1 style="font-size:38px;text-align:center;margin-bottom:4px;"><span style="font-family:'Aileron-Light';">Votre </span><span style="font-family:'Aileron-BoldItalic';">diagnostic</span></h1>
+    <h1 style="font-size:38px;text-align:center;margin-bottom:16px;"><span style="font-family:'Aileron-Light';">certification périodique</span></h1>
 
     <!-- Profession -->
     <p style="font-size:17px;font-family:'Aileron-SemiBold';color:${prof.color};text-align:center;margin-bottom:6px;">
