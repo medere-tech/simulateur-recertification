@@ -245,6 +245,16 @@ function getMonthYear(): string {
   return `${months[d.getMonth()]} ${d.getFullYear()}`;
 }
 
+// ─── SVG icons (remplace les glyphes Unicode absents des fonts) ───────
+const ICON_CHECK = `<svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" r="8" fill="#2DA131"/><path d="M4.5 8L7 10.5L11.5 5.5" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const ICON_WARNING = `<svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" r="8" fill="#EA6C00"/><text x="8" y="12" text-anchor="middle" fill="white" font-size="12" font-weight="bold" font-family="Arial">!</text></svg>`;
+const ICON_CROSS = `<svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" r="8" fill="#CC0000"/><path d="M5 5L11 11M11 5L5 11" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>`;
+const ICON_DOT_GREEN = `<svg width="10" height="10" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><circle cx="5" cy="5" r="5" fill="#2DA131"/></svg>`;
+
+function svgImg(svg: string, size = 16): string {
+  return `<img src="data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}" width="${size}" height="${size}" style="vertical-align:middle;display:inline-block;" />`;
+}
+
 
 // ─── Main Template Function ──────────────────────────────────────────
 export function getReportHTML(data: ReportData): string {
@@ -593,8 +603,8 @@ export function getReportHTML(data: ReportData): string {
               <span class="bloc-name">${b.name}</span>
             </td>
             <td style="color:${b.statusColor};font-family:'Aileron-SemiBold';font-size:11px;">
-              ${b.status}${b.status === 'Validé' ? ' ✓' : ''}
-              ${b.note ? `<br/><span style="font-size:9px;color:#2DA131;font-family:'Aileron';">● ${b.note}</span>` : ''}
+              ${b.status}${b.status === 'Validé' ? ` ${svgImg(ICON_CHECK, 14)}` : ''}
+              ${b.note ? `<br/><span style="font-size:9px;color:#2DA131;font-family:'Aileron';">${svgImg(ICON_DOT_GREEN, 10)} ${b.note}</span>` : ''}
             </td>
             <td style="color:${b.statusColor};font-size:14px;">
               ${b.score}
