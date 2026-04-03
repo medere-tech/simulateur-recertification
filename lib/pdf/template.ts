@@ -283,13 +283,13 @@ export function getReportHTML(data: ReportData): string {
 <head>
 <meta charset="UTF-8">
 <style>
-  @font-face { font-family:'Aileron'; font-weight:300; font-style:normal;  src:url(data:font/truetype;base64,${fontLight})          format('truetype'); }
-  @font-face { font-family:'Aileron'; font-weight:400; font-style:normal;  src:url(data:font/truetype;base64,${fontRegular})        format('truetype'); }
-  @font-face { font-family:'Aileron'; font-weight:400; font-style:italic;  src:url(data:font/truetype;base64,${fontItalic})         format('truetype'); }
-  @font-face { font-family:'Aileron'; font-weight:600; font-style:normal;  src:url(data:font/truetype;base64,${fontSemiBold})       format('truetype'); }
-  @font-face { font-family:'Aileron'; font-weight:600; font-style:italic;  src:url(data:font/truetype;base64,${fontSemiBoldItalic}) format('truetype'); }
-  @font-face { font-family:'Aileron'; font-weight:700; font-style:normal;  src:url(data:font/truetype;base64,${fontBold})           format('truetype'); }
-  @font-face { font-family:'Aileron'; font-weight:700; font-style:bold;  src:url(data:font/truetype;base64,${fontBoldItalic})     format('truetype'); }
+  @font-face { font-family:'Aileron-Light';          src:url(data:font/truetype;base64,${fontLight})          format('truetype'); }
+  @font-face { font-family:'Aileron';                src:url(data:font/truetype;base64,${fontRegular})        format('truetype'); }
+  @font-face { font-family:'Aileron-Italic';         src:url(data:font/truetype;base64,${fontItalic})         format('truetype'); }
+  @font-face { font-family:'Aileron-SemiBold';       src:url(data:font/truetype;base64,${fontSemiBold})       format('truetype'); }
+  @font-face { font-family:'Aileron-SemiBoldItalic'; src:url(data:font/truetype;base64,${fontSemiBoldItalic}) format('truetype'); }
+  @font-face { font-family:'Aileron-Bold';           src:url(data:font/truetype;base64,${fontBold})           format('truetype'); }
+  @font-face { font-family:'Aileron-BoldItalic';     src:url(data:font/truetype;base64,${fontBoldItalic})     format('truetype'); }
 
   *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
 
@@ -341,7 +341,7 @@ export function getReportHTML(data: ReportData): string {
     flex-shrink:0;
   }
   .page-header img { height:22px; width:auto; }
-  .page-header .page-num { font-size:9px; font-weight:300; color:#9C9494; }
+  .page-header .page-num { font-size:9px; font-family:'Aileron-Light'; color:#9C9494; }
 
   /* ── Footer ── */
   .page-footer {
@@ -353,16 +353,16 @@ export function getReportHTML(data: ReportData): string {
     padding-top:8px;
     text-align:center;
     font-size:7px;
-    font-weight:300;
+    font-family:'Aileron-Light';
     color:#9C9494;
     z-index:1;
   }
 
   /* ── Typography ── */
-  h1 { font-size:26px; font-weight:700; font-style:bold; color:#302D2D; line-height:1.2; margin-bottom:8px; }
-  h2 { font-size:18px; font-weight:600; font-style:italic; color:#302D2D; line-height:1.3; margin-bottom:16px; }
-  h3 { font-size:13px; font-weight:600; color:#494343; margin-bottom:6px; }
-  p, .body-text { font-size:10.5px; font-weight:400; color:#554F4F; line-height:1.6; }
+  h1 { font-size:26px; font-family:'Aileron-Bold'; color:#302D2D; line-height:1.2; margin-bottom:8px; }
+  h2 { font-size:18px; font-family:'Aileron-BoldItalic'; color:#302D2D; line-height:1.3; margin-bottom:16px; }
+  h3 { font-size:13px; font-family:'Aileron-SemiBold'; color:#494343; margin-bottom:6px; }
+  p, .body-text { font-size:10.5px; font-family:'Aileron'; color:#554F4F; line-height:1.6; }
 
   /* ── Info Box - CSS pur ── */
   .info-box {
@@ -372,7 +372,7 @@ export function getReportHTML(data: ReportData): string {
     padding:16px 20px;
   }
   .info-box.urgence {
-    background:#FDF8F3;
+    background:#FFFFFF;
     border:1.5px solid #DBD6CD;
   }
   .info-box.urgence::before {
@@ -380,7 +380,7 @@ export function getReportHTML(data: ReportData): string {
     width:90px;
     display:block;
     font-size:8px;
-    font-weight:700;
+    font-family:'Aileron-Bold';
     text-align:center;
     letter-spacing:1.5px;
     color:#000000;
@@ -423,7 +423,7 @@ export function getReportHTML(data: ReportData): string {
   .data-table thead th {
     background:rgba(240,234,229,0.85);
     font-size:9px;
-    font-weight:600;
+    font-family:'Aileron-SemiBold';
     color:#494343;
     text-transform:uppercase;
     letter-spacing:0.5px;
@@ -440,9 +440,9 @@ export function getReportHTML(data: ReportData): string {
     background:rgba(255,255,255,0.6);
   }
   .data-table tbody tr:last-child td { border-bottom:none; }
-  .data-table tbody td:last-child { text-align:right; font-weight:700; }
-  .data-table .bloc-label { font-size:8.5px; font-weight:400; color:#9C9494; display:block; }
-  .data-table .bloc-name { font-size:11px; font-weight:600; color:#302D2D; }
+  .data-table tbody td:last-child { text-align:right; font-family:'Aileron-Bold'; }
+  .data-table .bloc-label { font-size:8.5px; font-family:'Aileron'; color:#9C9494; display:block; }
+  .data-table .bloc-name { font-size:11px; font-family:'Aileron-SemiBold'; color:#302D2D; }
 
   /* ── Bullet list ── */
   .bullet-list { list-style:none; padding:0; margin:16px 0; }
@@ -469,7 +469,7 @@ export function getReportHTML(data: ReportData): string {
     padding:8px 28px;
     border-radius:999px;
     font-size:13px;
-    font-weight:600;
+    font-family:'Aileron-SemiBold';
     color:#FFFFFF;
   }
 
@@ -480,10 +480,10 @@ export function getReportHTML(data: ReportData): string {
     margin:24px 0;
     color:#FFFFFF;
   }
-  .cta-block h3 { color:#FFFFFF; font-size:16px; font-weight:600; margin-bottom:16px; }
+  .cta-block h3 { color:#FFFFFF; font-size:16px; font-family:'Aileron-SemiBold'; margin-bottom:16px; }
   .cta-row { display:flex; align-items:center; gap:10px; margin:8px 0; }
-  .cta-label { font-size:9px; font-weight:400; opacity:0.7; min-width:40px; color:#FFFFFF; }
-  .cta-value { font-size:12px; font-weight:600; color:#FFFFFF; }
+  .cta-label { font-size:9px; font-family:'Aileron'; opacity:0.7; min-width:40px; color:#FFFFFF; }
+  .cta-value { font-size:12px; font-family:'Aileron-SemiBold'; color:#FFFFFF; }
 
   /* ── Check list ── */
   .check-item { display:flex; align-items:flex-start; gap:10px; margin:10px 0; }
@@ -508,22 +508,22 @@ export function getReportHTML(data: ReportData): string {
          alt="Médéré"/>
 
     <!-- Titre -->
-    <h1 style="font-size:38px;text-align:center;margin-bottom:4px;">Votre diagnostic</h1>
-    <h1 style="font-size:38px;text-align:center;margin-bottom:16px;">certification périodique</h1>
+    <h1 style="font-size:38px;text-align:center;margin-bottom:4px;"><span style="font-family:'Aileron';">Votre </span><span style="font-family:'Aileron-BoldItalic';">diagnostic</span></h1>
+    <h1 style="font-size:38px;text-align:center;margin-bottom:16px;"><span style="font-family:'Aileron';">certification périodique</span></h1>
 
     <!-- Profession -->
-    <p style="font-size:17px;font-weight:600;color:${prof.color};text-align:center;margin-bottom:6px;">
+    <p style="font-size:17px;font-family:'Aileron-SemiBold';color:${prof.color};text-align:center;margin-bottom:6px;">
       ${prof.label}
     </p>
 
     <!-- Date -->
-    <p style="font-size:11px;font-weight:300;color:#9C9494;text-align:center;margin-bottom:32px;">
+    <p style="font-size:11px;font-family:'Aileron-Light';color:#9C9494;text-align:center;margin-bottom:32px;">
       ${monthYear}
     </p>
 
     <!-- Badge DPC -->
     <div style="background:rgba(255,255,255,0.82);border-radius:999px;padding:10px 28px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
-      <p style="font-size:11px;font-weight:600;color:#494343;text-align:center;">
+      <p style="font-size:11px;font-family:'Aileron-SemiBold';color:#494343;text-align:center;">
         Organisme certifié DPC n°9262 &bull; Qualiopi
       </p>
     </div>
@@ -531,7 +531,7 @@ export function getReportHTML(data: ReportData): string {
     <div style="flex:1;"></div>
 
     <!-- Confidentiel -->
-    <p style="font-size:9px;font-weight:300;color:#9C9494;text-align:center;margin-bottom:40px;">
+    <p style="font-size:9px;font-family:'Aileron-Light';color:#9C9494;text-align:center;margin-bottom:40px;">
       Document personnalisé - Confidentiel
     </p>
   </div>
@@ -558,7 +558,7 @@ export function getReportHTML(data: ReportData): string {
 
     <!-- Score -->
     <div style="text-align:center;margin:20px 0 8px;">
-      <span style="font-size:64px;font-weight:700;color:${urg.color};line-height:1;">
+      <span style="font-size:64px;font-family:'Aileron-Bold';color:${urg.color};line-height:1;">
         ${data.score}/${8}
       </span>
     </div>
@@ -594,9 +594,9 @@ export function getReportHTML(data: ReportData): string {
               <span class="bloc-label">${prof.terminology} ${b.num}</span>
               <span class="bloc-name">${b.name}</span>
             </td>
-            <td style="color:${b.statusColor};font-weight:600;font-size:11px;">
+            <td style="color:${b.statusColor};font-family:'Aileron-SemiBold';font-size:11px;">
               ${b.status}${b.status === 'Validé' ? ' ✓' : ''}
-              ${b.note ? `<br/><span style="font-size:9px;color:#2DA131;font-weight:400;">● ${b.note}</span>` : ''}
+              ${b.note ? `<br/><span style="font-size:9px;color:#2DA131;font-family:'Aileron';">● ${b.note}</span>` : ''}
             </td>
             <td style="color:${b.statusColor};font-size:14px;">
               ${b.score}
@@ -678,7 +678,7 @@ export function getReportHTML(data: ReportData): string {
               <span class="bloc-label">${prof.terminology} ${b.num}</span>
               <span class="bloc-name">${b.name}</span>
             </td>
-            <td style="color:${b.covered ? '#2DA131' : '#9C9494'};font-weight:${b.covered ? '600' : '400'};font-size:10.5px;">
+            <td style="color:${b.covered ? '#2DA131' : '#9C9494'};font-family:${b.covered ? "'Aileron-SemiBold'" : "'Aileron'"};font-size:10.5px;">
               ${b.covered
                 ? (b.note ? `Couvert par Médéré (${b.note})` : 'Couvert par Médéré')
                 : 'Hors catalogue'}
@@ -692,7 +692,7 @@ export function getReportHTML(data: ReportData): string {
       </table>
     </div>
 
-    <p style="font-size:8.5px;font-weight:300;color:#9C9494;margin-top:12px;">
+    <p style="font-size:8.5px;font-family:'Aileron-Light';color:#9C9494;margin-top:12px;">
       Référence : Arrêté du 26 février 2026 - NOR&nbsp;: SFHH2605575A - ${prof.annexe}
     </p>
   </div>
@@ -747,7 +747,7 @@ export function getReportHTML(data: ReportData): string {
           : '';
         return `
           <div style="border-left:3px solid ${prof.color};padding:8px 10px;margin-bottom:10px;background:#FAFAFA;border-radius:0 6px 6px 0;">
-            <p style="font-size:11px;font-weight:700;color:#302D2D;margin:0 0 3px;">${f.titre}</p>
+            <p style="font-size:11px;font-family:'Aileron-Bold';color:#302D2D;margin:0 0 3px;">${f.titre}</p>
             <p style="font-size:10px;color:#686162;margin:0 0 4px;">${[f.format, dureeLabel].filter(Boolean).join(' · ')}</p>
             ${link}
           </div>`;
@@ -758,7 +758,7 @@ export function getReportHTML(data: ReportData): string {
       if (!bloc1Needed && !bloc2Needed) {
         html += `
           <div style="background:#F0FBF0;border:1px solid #2DA131;border-radius:8px;padding:14px 16px;margin-bottom:16px;">
-            <p style="font-size:11px;font-weight:600;color:#1A6E1E;margin:0;">
+            <p style="font-size:11px;font-family:'Aileron-SemiBold';color:#1A6E1E;margin:0;">
               Félicitations, vos ${prof.terminologyPlural} 1 et 2 sont validés !
               Consultez notre catalogue pour maintenir vos compétences.
             </p>
@@ -766,7 +766,7 @@ export function getReportHTML(data: ReportData): string {
       } else {
         if (bloc1Needed && bloc1Fms.length > 0) {
           html += `
-            <p style="font-size:11px;font-weight:700;color:#302D2D;margin:0 0 8px;">
+            <p style="font-size:11px;font-family:'Aileron-Bold';color:#302D2D;margin:0 0 8px;">
               ${prof.terminology} 1 - ${prof.dimensions[0].name}
             </p>`;
           html += bloc1Fms.map(formationCard).join('');
@@ -774,7 +774,7 @@ export function getReportHTML(data: ReportData): string {
 
         if (bloc2Needed && bloc2Fms.length > 0) {
           html += `
-            <p style="font-size:11px;font-weight:700;color:#302D2D;margin:${bloc1Needed && bloc1Fms.length ? '12px' : '0'} 0 8px;">
+            <p style="font-size:11px;font-family:'Aileron-Bold';color:#302D2D;margin:${bloc1Needed && bloc1Fms.length ? '12px' : '0'} 0 8px;">
               ${prof.terminology} 2 - ${prof.dimensions[1].name}
             </p>`;
           html += bloc2Fms.map(formationCard).join('');
@@ -794,11 +794,11 @@ export function getReportHTML(data: ReportData): string {
 
       if (data.bloc3Status === 'a_faire') {
         html += `
-          <p style="font-size:11px;font-weight:700;color:#302D2D;margin:12px 0 8px;">
+          <p style="font-size:11px;font-family:'Aileron-Bold';color:#302D2D;margin:12px 0 8px;">
             ${prof.terminology} 3 - ${prof.dimensions[2].name}
           </p>
           <div style="border-left:3px solid ${prof.color};padding:8px 10px;margin-bottom:10px;background:#FAFAFA;border-radius:0 6px 6px 0;">
-            <p style="font-size:11px;font-weight:700;color:#302D2D;margin:0 0 3px;">Gestion de l'agressivité</p>
+            <p style="font-size:11px;font-family:'Aileron-Bold';color:#302D2D;margin:0 0 3px;">Gestion de l'agressivité</p>
             <p style="font-size:10px;color:#686162;margin:0 0 4px;">E-Learning</p>
             <a href="https://www.medere.fr/formations" style="font-size:10px;color:#006E90;text-decoration:underline;">En savoir plus sur medere.fr</a>
           </div>`;
@@ -870,7 +870,7 @@ export function getReportHTML(data: ReportData): string {
 
     <!-- Rappel réglementaire -->
     <div class="info-box urgence">
-      <p style="font-weight:600;font-size:10.5px;color:#cc0000;">
+      <p style="font-family:'Aileron-SemiBold';font-size:10.5px;color:#cc0000;">
         Rappel réglementaire : en cas de non-respect de vos obligations de certification périodique,
         votre Ordre peut engager une procédure disciplinaire. Ce document vous aide à anticiper, agissez maintenant\u00a0!
       </p>
@@ -940,7 +940,7 @@ export function getReportHTML(data: ReportData): string {
     <div style="flex:1;"></div>
 
     <!-- Legal -->
-    <p style="font-size:7.5px;font-weight:300;color:#9C9494;text-align:center;line-height:1.5;">
+    <p style="font-size:7.5px;font-family:'Aileron-Light';color:#9C9494;text-align:center;line-height:1.5;">
       Basé sur l'arrêté du 26 février 2026 - NOR&nbsp;: SFHH2605575A.
       Ce document est une estimation indicative. La validation finale de votre certification
       est prononcée par votre Ordre professionnel.

@@ -11,7 +11,8 @@
       "Bash(ls:*)",
       "Bash(node -e \":*)",
       "Bash(npm list:*)",
-      "Bash(find C:UsersDéthiéDocumentsGitHubsimulateur-recertification -name *.ttf -o -name *.woff*)"
+      "Bash(find C:UsersDéthiéDocumentsGitHubsimulateur-recertification -name *.ttf -o -name *.woff*)",
+      "Bash(grep -v \"^[0-9]*:.*{$\\\\|\\\\.page\\\\|\\\\.info\\\\|\\\\.bullet\\\\|\\\\.check\\\\|\\\\.cta\\\\|\\\\.data\\\\|\\\\.score\\\\|\\\\.urgency\\\\|h[123]\\\\s*{\\\\|body\\\\s*{\\\\|p,\\\\|\\\\.page-num\\\\|\\\\.page-footer\\\\|font-weight:[0-9]*;\\\\s*}\")"
     ]
   }
 }
