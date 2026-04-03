@@ -254,13 +254,12 @@ export function getReportHTML(data: ReportData): string {
   const deadline = getDeadlineYear(data);
 
   // Fonts
-  const fontLight           = getFontBase64('Aileron-Light.ttf');
-  const fontRegular         = getFontBase64('Aileron-Regular.ttf');
-  const fontItalic          = getFontBase64('Aileron-Italic.ttf');
-  const fontSemiBold        = getFontBase64('Aileron-SemiBold.ttf');
-  const fontSemiBoldItalic  = getFontBase64('Aileron-SemiBoldItalic.ttf');
-  const fontBold            = getFontBase64('Aileron-Bold.ttf');
-  const fontBoldItalic      = getFontBase64('Aileron-BoldItalic.ttf');
+  const fontLight          = getFontBase64('Aileron-Light.ttf');
+  const fontRegular        = getFontBase64('Aileron-Regular.ttf');
+  const fontSemiBold       = getFontBase64('Aileron-SemiBold.ttf');
+  const fontBold           = getFontBase64('Aileron-Bold.ttf');
+  const fontDMSerifRegular = getFontBase64('DMSerifText-Regular.ttf');
+  const fontDMSerifItalic  = getFontBase64('DMSerifText-Italic.ttf');
   const logo = getLogoBase64();
 
   // Template SVG backgrounds
@@ -283,13 +282,12 @@ export function getReportHTML(data: ReportData): string {
 <head>
 <meta charset="UTF-8">
 <style>
-  @font-face { font-family:'Aileron-Light';          src:url(data:font/truetype;base64,${fontLight})          format('truetype'); }
-  @font-face { font-family:'Aileron';                src:url(data:font/truetype;base64,${fontRegular})        format('truetype'); }
-  @font-face { font-family:'Aileron-Italic';         src:url(data:font/truetype;base64,${fontItalic})         format('truetype'); }
-  @font-face { font-family:'Aileron-SemiBold';       src:url(data:font/truetype;base64,${fontSemiBold})       format('truetype'); }
-  @font-face { font-family:'Aileron-SemiBoldItalic'; src:url(data:font/truetype;base64,${fontSemiBoldItalic}) format('truetype'); }
-  @font-face { font-family:'Aileron-Bold';           src:url(data:font/truetype;base64,${fontBold})           format('truetype'); }
-  @font-face { font-family:'Aileron-BoldItalic';     src:url(data:font/truetype;base64,${fontBoldItalic})     format('truetype'); }
+  @font-face { font-family:'Aileron-Light';       src:url(data:font/truetype;base64,${fontLight})          format('truetype'); }
+  @font-face { font-family:'Aileron';             src:url(data:font/truetype;base64,${fontRegular})        format('truetype'); }
+  @font-face { font-family:'Aileron-SemiBold';    src:url(data:font/truetype;base64,${fontSemiBold})       format('truetype'); }
+  @font-face { font-family:'Aileron-Bold';        src:url(data:font/truetype;base64,${fontBold})           format('truetype'); }
+  @font-face { font-family:'DMSerifText-Regular'; src:url(data:font/truetype;base64,${fontDMSerifRegular}) format('truetype'); }
+  @font-face { font-family:'DMSerifText-Italic';  src:url(data:font/truetype;base64,${fontDMSerifItalic})  format('truetype'); }
 
   *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
 
@@ -360,7 +358,7 @@ export function getReportHTML(data: ReportData): string {
 
   /* ── Typography ── */
   h1 { font-size:26px; font-family:'Aileron-Bold'; color:#302D2D; line-height:1.2; margin-bottom:8px; }
-  h2 { font-size:18px; font-family:'Aileron-BoldItalic'; color:#302D2D; line-height:1.3; margin-bottom:16px; }
+  h2 { font-size:18px; font-family:'DMSerifText-Italic'; color:#302D2D; line-height:1.3; margin-bottom:16px; }
   h3 { font-size:13px; font-family:'Aileron-SemiBold'; color:#494343; margin-bottom:6px; }
   p, .body-text { font-size:10.5px; font-family:'Aileron'; color:#554F4F; line-height:1.6; }
 
@@ -508,8 +506,8 @@ export function getReportHTML(data: ReportData): string {
          alt="Médéré"/>
 
     <!-- Titre -->
-    <h1 style="font-size:38px;text-align:center;margin-bottom:4px;"><span style="font-family:'Aileron-Light';">Votre </span><span style="font-family:'Aileron-BoldItalic';">diagnostic</span></h1>
-    <h1 style="font-size:38px;text-align:center;margin-bottom:16px;"><span style="font-family:'Aileron-Light';">certification périodique</span></h1>
+    <h1 style="font-size:38px;text-align:center;margin-bottom:4px;"><span style="font-family:'DMSerifText-Regular';">Votre </span><span style="font-family:'DMSerifText-Italic';">diagnostic</span></h1>
+    <h1 style="font-size:38px;text-align:center;margin-bottom:16px;"><span style="font-family:'DMSerifText-Regular';">certification périodique</span></h1>
 
     <!-- Profession -->
     <p style="font-size:17px;font-family:'Aileron-SemiBold';color:${prof.color};text-align:center;margin-bottom:6px;">
