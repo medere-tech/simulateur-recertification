@@ -366,7 +366,7 @@ export function getReportHTML(data: ReportData): string {
     padding:16px 20px;
   }
   .info-box.urgence {
-    background:#FDF8F3;
+    background:#ffffff;
     border:1.5px solid #DBD6CD;
   }
   .info-box.urgence::before {
@@ -378,14 +378,14 @@ export function getReportHTML(data: ReportData): string {
     text-align:center;
     letter-spacing:1.5px;
     color:#000000;
-    background:#ffffff;
+    background:#FDF8F3;
     padding:5px;
     border-radius:8px;
     text-transform:uppercase;
     margin-bottom:8px;
   }
-  .info-box.urgence h3 { font-size:11.5px; color:#302D2D; margin-bottom:6px; }
-  .info-box.urgence p { font-size:10px; color:#686162; }
+  .info-box.urgence h3 { font-size:11.5px; color:#000000; margin-bottom:6px; }
+  .info-box.urgence p { font-size:10px; color:#000000; }
   .info-box.resume {
     background:#006E90;
   }
