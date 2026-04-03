@@ -254,10 +254,13 @@ export function getReportHTML(data: ReportData): string {
   const deadline = getDeadlineYear(data);
 
   // Fonts
-  const fontLight = getFontBase64('Aileron-Light.ttf');
-  const fontRegular = getFontBase64('Aileron-Regular.ttf');
-  const fontSemiBold = getFontBase64('Aileron-SemiBold.ttf');
-  const fontBold = getFontBase64('Aileron-Bold.ttf');
+  const fontLight           = getFontBase64('Aileron-Light.ttf');
+  const fontRegular         = getFontBase64('Aileron-Regular.ttf');
+  const fontItalic          = getFontBase64('Aileron-Italic.ttf');
+  const fontSemiBold        = getFontBase64('Aileron-SemiBold.ttf');
+  const fontSemiBoldItalic  = getFontBase64('Aileron-SemiBoldItalic.ttf');
+  const fontBold            = getFontBase64('Aileron-Bold.ttf');
+  const fontBoldItalic      = getFontBase64('Aileron-BoldItalic.ttf');
   const logo = getLogoBase64();
 
   // Template SVG backgrounds
@@ -280,10 +283,13 @@ export function getReportHTML(data: ReportData): string {
 <head>
 <meta charset="UTF-8">
 <style>
-  @font-face { font-family:'Aileron'; font-weight:300; src:url(data:font/truetype;base64,${fontLight}) format('truetype'); }
-  @font-face { font-family:'Aileron'; font-weight:400; src:url(data:font/truetype;base64,${fontRegular}) format('truetype'); }
-  @font-face { font-family:'Aileron'; font-weight:600; src:url(data:font/truetype;base64,${fontSemiBold}) format('truetype'); }
-  @font-face { font-family:'Aileron'; font-weight:700; src:url(data:font/truetype;base64,${fontBold}) format('truetype'); }
+  @font-face { font-family:'Aileron'; font-weight:300; font-style:normal;  src:url(data:font/truetype;base64,${fontLight})          format('truetype'); }
+  @font-face { font-family:'Aileron'; font-weight:400; font-style:normal;  src:url(data:font/truetype;base64,${fontRegular})        format('truetype'); }
+  @font-face { font-family:'Aileron'; font-weight:400; font-style:italic;  src:url(data:font/truetype;base64,${fontItalic})         format('truetype'); }
+  @font-face { font-family:'Aileron'; font-weight:600; font-style:normal;  src:url(data:font/truetype;base64,${fontSemiBold})       format('truetype'); }
+  @font-face { font-family:'Aileron'; font-weight:600; font-style:italic;  src:url(data:font/truetype;base64,${fontSemiBoldItalic}) format('truetype'); }
+  @font-face { font-family:'Aileron'; font-weight:700; font-style:normal;  src:url(data:font/truetype;base64,${fontBold})           format('truetype'); }
+  @font-face { font-family:'Aileron'; font-weight:700; font-style:italic;  src:url(data:font/truetype;base64,${fontBoldItalic})     format('truetype'); }
 
   *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
 
@@ -353,8 +359,8 @@ export function getReportHTML(data: ReportData): string {
   }
 
   /* ── Typography ── */
-  h1 { font-size:26px; font-weight:700; color:#302D2D; line-height:1.2; margin-bottom:8px; }
-  h2 { font-size:18px; font-weight:700; color:#302D2D; line-height:1.3; margin-bottom:16px; }
+  h1 { font-size:26px; font-weight:700; font-style:italic; color:#302D2D; line-height:1.2; margin-bottom:8px; }
+  h2 { font-size:18px; font-weight:600; font-style:italic; color:#302D2D; line-height:1.3; margin-bottom:16px; }
   h3 { font-size:13px; font-weight:600; color:#494343; margin-bottom:6px; }
   p, .body-text { font-size:10.5px; font-weight:400; color:#554F4F; line-height:1.6; }
 
@@ -366,7 +372,7 @@ export function getReportHTML(data: ReportData): string {
     padding:16px 20px;
   }
   .info-box.urgence {
-    background:#ffffff;
+    background:rgba(240,234,229,0.85);
     border:1.5px solid #DBD6CD;
   }
   .info-box.urgence::before {
@@ -380,7 +386,7 @@ export function getReportHTML(data: ReportData): string {
     color:#000000;
     background:#FDF8F3;
     padding:5px;
-    border-radius:8px;
+    border-radius:4px;
     text-transform:uppercase;
     margin-bottom:8px;
   }

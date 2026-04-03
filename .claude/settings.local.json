@@ -10,7 +10,8 @@
       "Bash(curl:*)",
       "Bash(ls:*)",
       "Bash(node -e \":*)",
-      "Bash(npm list:*)"
+      "Bash(npm list:*)",
+      "Bash(find C:UsersDéthiéDocumentsGitHubsimulateur-recertification -name *.ttf -o -name *.woff*)"
     ]
   }
 }

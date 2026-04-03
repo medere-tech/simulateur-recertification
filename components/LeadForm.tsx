@@ -1,20 +1,28 @@
 "use client";
 
 // Formulaire de capture email - Écran 7
-// Validation live (onBlur + live après premier blur), blacklist domaines perso
+// Validation live (onBlur + live après premier blur), blacklist emails jetables
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { GA4 } from "@/lib/ga4";
 import { LockIcon, CheckIcon, AlertIcon } from "@/components/icons";
 
-// ─── Domaines personnels refusés ──────────────────────────────────────────────
+// ─── Domaines jetables / temporaires refusés ──────────────────────────────────
 
-const PERSONAL_DOMAINS = new Set([
-  "gmail.com", "yahoo.fr", "yahoo.com", "hotmail.com", "hotmail.fr",
-  "outlook.com", "outlook.fr", "live.fr", "live.com", "orange.fr",
-  "free.fr", "sfr.fr", "laposte.net", "wanadoo.fr", "icloud.com",
-  "me.com", "protonmail.com", "protonmail.ch", "gmx.fr", "gmx.com", "aol.com",
+const DISPOSABLE_EMAIL_DOMAINS = new Set([
+  "tempmail.com", "temp-mail.org", "guerrillamail.com", "guerrillamail.net",
+  "mailinator.com", "yopmail.com", "yopmail.fr", "throwaway.email",
+  "sharklasers.com", "guerrillamailblock.com", "grr.la", "dispostable.com",
+  "trashmail.com", "trashmail.me", "trashmail.net", "tempail.com",
+  "tempr.email", "temp-mail.io", "10minutemail.com", "minutemail.com",
+  "emailondeck.com", "maildrop.cc", "mailnesia.com", "mailcatch.com",
+  "fakeinbox.com", "tempinbox.com", "discard.email", "mailnull.com",
+  "spamgourmet.com", "mytemp.email", "mohmal.com", "getnada.com",
+  "burnermail.io", "inboxkitten.com", "jetable.org", "crazymailing.com",
+  "tmail.com", "tmpmail.net", "tmpmail.org", "bupmail.com",
+  "mailtemp.net", "tempmailo.com", "emailfake.com", "generator.email",
+  "harakirimail.com", "tempmailaddress.com",
 ]);
 
 // ─── Helpers de validation ────────────────────────────────────────────────────
@@ -28,8 +36,8 @@ function validateEmailValue(value: string): ValidationResult {
     return { state: "error", message: "Adresse email invalide" };
   }
   const domain = value.split("@")[1]?.toLowerCase() ?? "";
-  if (PERSONAL_DOMAINS.has(domain)) {
-    return { state: "error", message: "Veuillez utiliser votre email professionnel" };
+  if (DISPOSABLE_EMAIL_DOMAINS.has(domain)) {
+    return { state: "error", message: "Les adresses email temporaires ne sont pas acceptées. Veuillez utiliser votre adresse email habituelle." };
   }
   return { state: "valid", message: "" };
 }

@@ -35,7 +35,7 @@ function getConstraint(profession: ProfessionId): string | null {
     case "PSY":
       return "Le e-learning Qualiopi est explicitement validant pour l\u2019Axe\u00a01 en psychiatrie.";
     case "MG":
-      return "18\u00a0pratiques sont exclues du référentiel MG (homéopathie, ostéopathie\u2026).";
+      return "23\u00a0pratiques sont exclues du référentiel MG (homéopathie, ostéopathie\u2026).";
     default:
       return null;
   }

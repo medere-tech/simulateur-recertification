@@ -67,7 +67,7 @@ Ce document est basé sur l'arrêté du 26 février 2026 (NOR : SFHH2605575A). I
     await transporter.sendMail({
       from:    `"Médéré" <${process.env.EMAIL_FROM || "contact@medere.fr"}>`,
       to:      params.to,
-      subject: "🎉​ Votre diagnostic certification périodique - Médéré",
+      subject: "🎉​ Resultat de votre diagnostic certification périodique - Médéré",
       text:    emailBody,
       attachments: [
         {
