@@ -289,7 +289,7 @@ export function getReportHTML(data: ReportData): string {
   @font-face { font-family:'Aileron'; font-weight:600; font-style:normal;  src:url(data:font/truetype;base64,${fontSemiBold})       format('truetype'); }
   @font-face { font-family:'Aileron'; font-weight:600; font-style:italic;  src:url(data:font/truetype;base64,${fontSemiBoldItalic}) format('truetype'); }
   @font-face { font-family:'Aileron'; font-weight:700; font-style:normal;  src:url(data:font/truetype;base64,${fontBold})           format('truetype'); }
-  @font-face { font-family:'Aileron'; font-weight:700; font-style:italic;  src:url(data:font/truetype;base64,${fontBoldItalic})     format('truetype'); }
+  @font-face { font-family:'Aileron'; font-weight:700; font-style:bold;  src:url(data:font/truetype;base64,${fontBoldItalic})     format('truetype'); }
 
   *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
 
@@ -359,7 +359,7 @@ export function getReportHTML(data: ReportData): string {
   }
 
   /* ── Typography ── */
-  h1 { font-size:26px; font-weight:700; font-style:italic; color:#302D2D; line-height:1.2; margin-bottom:8px; }
+  h1 { font-size:26px; font-weight:700; font-style:bold; color:#302D2D; line-height:1.2; margin-bottom:8px; }
   h2 { font-size:18px; font-weight:600; font-style:italic; color:#302D2D; line-height:1.3; margin-bottom:16px; }
   h3 { font-size:13px; font-weight:600; color:#494343; margin-bottom:6px; }
   p, .body-text { font-size:10.5px; font-weight:400; color:#554F4F; line-height:1.6; }
@@ -372,7 +372,7 @@ export function getReportHTML(data: ReportData): string {
     padding:16px 20px;
   }
   .info-box.urgence {
-    background:rgba(240,234,229,0.85);
+    background:#FDF8F3;
     border:1.5px solid #DBD6CD;
   }
   .info-box.urgence::before {
@@ -384,7 +384,7 @@ export function getReportHTML(data: ReportData): string {
     text-align:center;
     letter-spacing:1.5px;
     color:#000000;
-    background:#FDF8F3;
+    background:rgba(240,234,229,0.85);
     padding:5px;
     border-radius:4px;
     text-transform:uppercase;
