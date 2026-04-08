@@ -7,9 +7,7 @@ export const CONFIG = {
   HUBSPOT_ENABLED: process.env.NEXT_PUBLIC_HUBSPOT_ENABLED === "true",
 
   // URL du calendrier HubSpot meetings (lien Jordan)
-  HUBSPOT_MEETING_URL:
-    process.env.NEXT_PUBLIC_HUBSPOT_MEETING_URL ||
-    "https://meetings.hubspot.com/medere",
+  HUBSPOT_MEETING_URL: process.env.NEXT_PUBLIC_HUBSPOT_MEETING_URL || "",
 
   // SMTP - envoi du PDF par email (actif si SMTP_USER + SMTP_PASS définis)
   SMTP_ENABLED: !!(process.env.SMTP_USER && process.env.SMTP_PASS),

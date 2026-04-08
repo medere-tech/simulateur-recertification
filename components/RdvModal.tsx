@@ -88,12 +88,14 @@ export default function RdvModal({ isOpen, onClose }: Props) {
         </div>
 
         {/* iframe - remplit exactement l'espace restant, pas de scrollbar */}
-        <iframe
-          src={CONFIG.HUBSPOT_MEETING_URL}
-          title="Prendre rendez-vous avec Médéré"
-          className="w-full flex-1 border-0"
-          allow="camera; microphone"
-        />
+        {CONFIG.HUBSPOT_MEETING_URL ? (
+          <iframe
+            src={CONFIG.HUBSPOT_MEETING_URL}
+            title="Prendre rendez-vous avec Médéré"
+            className="w-full flex-1 border-0"
+            allow="camera; microphone"
+          />
+        ) : null}
 
       </div>
     </div>
