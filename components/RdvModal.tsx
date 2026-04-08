@@ -1,9 +1,9 @@
 "use client";
 
-// Modal RDV - ouvre le lien HubSpot meetings dans un nouvel onglet
-// Mobile : sheet plein écran depuis le bas
-// Desktop : modal centré max-w-lg
-// Escape + clic overlay pour fermer, focus sur bouton close à l'ouverture
+// Modal RDV - widget embed officiel HubSpot Meetings
+// Mobile : plein écran
+// Desktop : modal centré max-w-3xl
+// Escape + clic overlay pour fermer
 
 import { useEffect, useRef } from "react";
 
@@ -15,19 +15,18 @@ type Props = {
 const meetingUrl = process.env.NEXT_PUBLIC_HUBSPOT_MEETING_URL || "";
 
 export default function RdvModal({ isOpen, onClose }: Props) {
-  const closeBtnRef = useRef<HTMLButtonElement>(null);
-  const overlayRef  = useRef<HTMLDivElement>(null);
+  const closeBtnRef        = useRef<HTMLButtonElement>(null);
+  const overlayRef         = useRef<HTMLDivElement>(null);
+  const meetingContainerRef = useRef<HTMLDivElement>(null);
 
+  // Escape + scroll lock
   useEffect(() => {
     if (!isOpen) return;
 
-    // Empêche le scroll du body
     document.body.style.overflow = "hidden";
 
-    // Focus sur le bouton fermer (accessibilité)
     const timer = setTimeout(() => closeBtnRef.current?.focus(), 50);
 
-    // Escape pour fermer
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
     }
@@ -39,6 +38,33 @@ export default function RdvModal({ isOpen, onClose }: Props) {
       document.removeEventListener("keydown", onKey);
     };
   }, [isOpen, onClose]);
+
+  // Chargement du widget embed HubSpot
+  useEffect(() => {
+    if (!isOpen || !meetingUrl || !meetingContainerRef.current) return;
+
+    // Nettoyer le conteneur
+    meetingContainerRef.current.innerHTML = "";
+
+    // Div que HubSpot attend
+    const meetingsDiv = document.createElement("div");
+    meetingsDiv.className = "meetings-iframe-container";
+    meetingsDiv.setAttribute("data-src", meetingUrl + "?embed=true");
+    meetingContainerRef.current.appendChild(meetingsDiv);
+
+    // Script embed officiel HubSpot
+    const script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src = "https://static.hsappstatic.net/MeetingsEmbed/ex/MeetingsEmbedCode.js";
+    script.async = true;
+    meetingContainerRef.current.appendChild(script);
+
+    return () => {
+      if (meetingContainerRef.current) {
+        meetingContainerRef.current.innerHTML = "";
+      }
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -55,22 +81,22 @@ export default function RdvModal({ isOpen, onClose }: Props) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="rdv-modal-title"
-        className="flex w-full flex-col overflow-hidden rounded-t-2xl bg-white animate-hero-in sm:max-w-lg sm:rounded-2xl"
+        className="flex h-[100vh] w-full flex-col overflow-hidden bg-white animate-hero-in sm:h-auto sm:max-h-[90vh] sm:max-w-3xl sm:rounded-2xl"
       >
 
-        {/* Header hauteur fixe h-14 */}
+        {/* Header */}
         <div className="flex h-14 flex-shrink-0 items-center justify-between border-b border-[#DBD6CD] px-5">
           <h2
             id="rdv-modal-title"
             className="text-base font-bold text-[#302D2D]"
           >
-            Prendre rendez-vous
+            Prenez rendez-vous avec un conseiller Médéré
           </h2>
           <button
             ref={closeBtnRef}
             onClick={onClose}
             aria-label="Fermer le modal"
-            className="flex h-8 w-8 items-center justify-center rounded-full text-[#9C9494] transition-colors duration-150 hover:bg-[#F0EAE5] hover:text-[#302D2D]"
+            className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-[#9C9494] transition-colors duration-150 hover:bg-[#F0EAE5] hover:text-[#302D2D]"
           >
             <svg
               width="16"
@@ -89,34 +115,32 @@ export default function RdvModal({ isOpen, onClose }: Props) {
         </div>
 
         {/* Contenu */}
-        <div className="flex flex-col items-center gap-6 px-8 py-10 text-center">
-          <div className="flex flex-col gap-2">
-            <p className="text-lg font-bold text-[#302D2D]">
-              Prenez rendez-vous avec un conseiller Médéré
-            </p>
-            <p className="text-sm text-[#6B6262]">
-              Choisissez un créneau qui vous convient pour un accompagnement personnalisé sur votre certification périodique.
+        {meetingUrl ? (
+          // Conteneur du widget HubSpot
+          <div
+            ref={meetingContainerRef}
+            className="w-full flex-1 overflow-y-auto"
+            style={{ minHeight: "650px" }}
+          >
+            {/* Texte affiché pendant le chargement du widget */}
+            <p className="py-10 text-center text-sm text-[#9C9494]">
+              Chargement du planning…
             </p>
           </div>
-
-          {meetingUrl && (
+        ) : (
+          // Fallback si URL non configurée
+          <div className="flex flex-1 flex-col items-center justify-center gap-4 px-8 py-10 text-center">
+            <p className="text-base font-semibold text-[#302D2D]">
+              Appelez-nous au 01 88 33 95 28
+            </p>
             <button
-              onClick={() => window.open(meetingUrl, "_blank")}
-              className="w-full rounded-xl bg-[#006E90] px-6 py-4 text-base font-semibold text-white transition-colors duration-150 hover:bg-[#005a77]"
+              onClick={onClose}
+              className="text-sm text-[#6B6262] underline underline-offset-2 hover:text-[#302D2D]"
             >
-              Choisir un créneau →
+              Fermer
             </button>
-          )}
-
-          <p className="text-xs text-[#9C9494]">Gratuit · 15 minutes · Sans engagement</p>
-
-          <button
-            onClick={onClose}
-            className="text-sm text-[#6B6262] underline underline-offset-2 hover:text-[#302D2D]"
-          >
-            Fermer
-          </button>
-        </div>
+          </div>
+        )}
 
       </div>
     </div>
