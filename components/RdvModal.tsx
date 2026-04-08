@@ -6,14 +6,16 @@
 // Escape + clic overlay pour fermer, focus sur bouton close à l'ouverture
 
 import { useEffect, useRef } from "react";
-import { CONFIG } from "@/lib/config";
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
 };
 
+const meetingUrl = process.env.NEXT_PUBLIC_HUBSPOT_MEETING_URL || "";
+
 export default function RdvModal({ isOpen, onClose }: Props) {
+  console.log("[RDV] Meeting URL:", process.env.NEXT_PUBLIC_HUBSPOT_MEETING_URL);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const overlayRef  = useRef<HTMLDivElement>(null);
 
@@ -88,11 +90,14 @@ export default function RdvModal({ isOpen, onClose }: Props) {
         </div>
 
         {/* iframe - remplit exactement l'espace restant, pas de scrollbar */}
-        {CONFIG.HUBSPOT_MEETING_URL ? (
+        {meetingUrl ? (
           <iframe
-            src={CONFIG.HUBSPOT_MEETING_URL}
+            src={meetingUrl}
             title="Prendre rendez-vous avec Médéré"
-            className="w-full flex-1 border-0"
+            width="100%"
+            height="650"
+            frameBorder="0"
+            className="flex-1 border-0"
             allow="camera; microphone"
           />
         ) : null}
