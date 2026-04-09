@@ -1,6 +1,6 @@
 "use client";
 
-// Modal RDV - iframe HubSpot Meetings avec ?embed=true
+// Modal RDV - HubSpot Meetings embed officiel (MeetingsEmbedCode.js)
 // Mobile : plein écran
 // Desktop : modal centré max-w-3xl
 // Escape + clic overlay pour fermer
@@ -17,6 +17,7 @@ const meetingUrl = process.env.NEXT_PUBLIC_HUBSPOT_MEETING_URL || "";
 export default function RdvModal({ isOpen, onClose }: Props) {
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const overlayRef  = useRef<HTMLDivElement>(null);
+  const meetingContainerRef = useRef<HTMLDivElement>(null);
 
   // Escape + scroll lock
   useEffect(() => {
@@ -38,11 +39,35 @@ export default function RdvModal({ isOpen, onClose }: Props) {
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  // Charger le widget embed HubSpot quand le modal s'ouvre
+  useEffect(() => {
+    if (!isOpen || !meetingUrl || !meetingContainerRef.current) return;
 
-  const iframeSrc = meetingUrl
-    ? `${meetingUrl}${meetingUrl.includes("?") ? "&" : "?"}embed=true`
-    : "";
+    // Nettoyer le conteneur
+    meetingContainerRef.current.innerHTML = '';
+
+    // Créer le div que HubSpot attend
+    const meetingsDiv = document.createElement('div');
+    meetingsDiv.className = 'meetings-iframe-container';
+    meetingsDiv.setAttribute('data-src', meetingUrl + '?embed=true');
+    meetingContainerRef.current.appendChild(meetingsDiv);
+
+    // Charger le script embed HubSpot
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = 'https://static.hsappstatic.net/MeetingsEmbed/ex/MeetingsEmbedCode.js';
+    script.async = true;
+    meetingContainerRef.current.appendChild(script);
+
+    // Cleanup quand le modal se ferme
+    return () => {
+      if (meetingContainerRef.current) {
+        meetingContainerRef.current.innerHTML = '';
+      }
+    };
+  }, [isOpen, meetingUrl]);
+
+  if (!isOpen) return null;
 
   return (
     // Overlay
@@ -91,21 +116,32 @@ export default function RdvModal({ isOpen, onClose }: Props) {
         </div>
 
         {/* Contenu */}
-        {iframeSrc ? (
-          <iframe
-            src={iframeSrc}
-            width="100%"
-            height="700"
-            frameBorder="0"
-            style={{ border: "none", minHeight: "700px" }}
-            allow="camera; microphone"
-            title="Prise de rendez-vous Médéré"
-          />
+        {meetingUrl ? (
+          <div className="flex-1 overflow-auto">
+            <div
+              ref={meetingContainerRef}
+              style={{ minHeight: "650px", width: "100%" }}
+            >
+              <p style={{ textAlign: "center", padding: "40px", color: "#9C9494" }}>
+                Chargement du planning...
+              </p>
+            </div>
+          </div>
         ) : (
           <div style={{ textAlign: "center", padding: "40px" }}>
             <p>Appelez-nous au 01 88 33 95 28</p>
           </div>
         )}
+
+        {/* Footer */}
+        <div className="flex flex-shrink-0 justify-end border-t border-[#DBD6CD] px-5 py-3">
+          <button
+            onClick={onClose}
+            className="rounded-lg bg-[#F0EAE5] px-4 py-2 text-sm font-medium text-[#302D2D] transition-colors duration-150 hover:bg-[#DBD6CD]"
+          >
+            Fermer
+          </button>
+        </div>
 
       </div>
     </div>
