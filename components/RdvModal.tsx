@@ -1,6 +1,6 @@
 "use client";
 
-// Modal RDV - widget embed officiel HubSpot Meetings
+// Modal RDV - iframe HubSpot Meetings avec ?embed=true
 // Mobile : plein écran
 // Desktop : modal centré max-w-3xl
 // Escape + clic overlay pour fermer
@@ -15,9 +15,8 @@ type Props = {
 const meetingUrl = process.env.NEXT_PUBLIC_HUBSPOT_MEETING_URL || "";
 
 export default function RdvModal({ isOpen, onClose }: Props) {
-  const closeBtnRef        = useRef<HTMLButtonElement>(null);
-  const overlayRef         = useRef<HTMLDivElement>(null);
-  const meetingContainerRef = useRef<HTMLDivElement>(null);
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
+  const overlayRef  = useRef<HTMLDivElement>(null);
 
   // Escape + scroll lock
   useEffect(() => {
@@ -39,34 +38,11 @@ export default function RdvModal({ isOpen, onClose }: Props) {
     };
   }, [isOpen, onClose]);
 
-  // Chargement du widget embed HubSpot
-  useEffect(() => {
-    if (!isOpen || !meetingUrl || !meetingContainerRef.current) return;
-
-    // Nettoyer le conteneur
-    meetingContainerRef.current.innerHTML = "";
-
-    // Div que HubSpot attend
-    const meetingsDiv = document.createElement("div");
-    meetingsDiv.className = "meetings-iframe-container";
-    meetingsDiv.setAttribute("data-src", meetingUrl + "?embed=true");
-    meetingContainerRef.current.appendChild(meetingsDiv);
-
-    // Script embed officiel HubSpot
-    const script = document.createElement("script");
-    script.type = "text/javascript";
-    script.src = "https://static.hsappstatic.net/MeetingsEmbed/ex/MeetingsEmbedCode.js";
-    script.async = true;
-    meetingContainerRef.current.appendChild(script);
-
-    return () => {
-      if (meetingContainerRef.current) {
-        meetingContainerRef.current.innerHTML = "";
-      }
-    };
-  }, [isOpen]);
-
   if (!isOpen) return null;
+
+  const iframeSrc = meetingUrl
+    ? `${meetingUrl}${meetingUrl.includes("?") ? "&" : "?"}embed=true`
+    : "";
 
   return (
     // Overlay
@@ -115,30 +91,19 @@ export default function RdvModal({ isOpen, onClose }: Props) {
         </div>
 
         {/* Contenu */}
-        {meetingUrl ? (
-          // Conteneur du widget HubSpot
-          <div
-            ref={meetingContainerRef}
-            className="w-full flex-1 overflow-y-auto"
-            style={{ minHeight: "650px" }}
-          >
-            {/* Texte affiché pendant le chargement du widget */}
-            <p className="py-10 text-center text-sm text-[#9C9494]">
-              Chargement du planning…
-            </p>
-          </div>
+        {iframeSrc ? (
+          <iframe
+            src={iframeSrc}
+            width="100%"
+            height="700"
+            frameBorder="0"
+            style={{ border: "none", minHeight: "700px" }}
+            allow="camera; microphone"
+            title="Prise de rendez-vous Médéré"
+          />
         ) : (
-          // Fallback si URL non configurée
-          <div className="flex flex-1 flex-col items-center justify-center gap-4 px-8 py-10 text-center">
-            <p className="text-base font-semibold text-[#302D2D]">
-              Appelez-nous au 01 88 33 95 28
-            </p>
-            <button
-              onClick={onClose}
-              className="text-sm text-[#6B6262] underline underline-offset-2 hover:text-[#302D2D]"
-            >
-              Fermer
-            </button>
+          <div style={{ textAlign: "center", padding: "40px" }}>
+            <p>Appelez-nous au 01 88 33 95 28</p>
           </div>
         )}
 
