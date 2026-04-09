@@ -742,8 +742,8 @@ export function getReportHTML(data: ReportData): string {
     </div>
 
     ${(() => {
-      const bloc1Fms = data.formations.filter(f => f.blocAxe === '1');
-      const bloc2Fms = data.formations.filter(f => f.blocAxe === '2');
+      const bloc1Fms = data.formations.filter(f => f.blocAxe?.includes('1'));
+      const bloc2Fms = data.formations.filter(f => f.blocAxe?.includes('2'));
 
       const bloc1Needed = data.bloc1Status !== 'valide';
       const bloc2Needed = data.bloc2Status !== 'valide';

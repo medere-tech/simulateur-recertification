@@ -64,7 +64,7 @@ export type Formation = {
   format:         "E-Learning" | "Classe virtuelle" | "Présentiel" | "Hybride" | string;
   url:            string;
   indemnisation:  number | null;
-  blocAxe:        string | null; // "1" | "2" | "3" | "4"
+  blocAxe:        string[] | null; // ["1"] | ["1", "2"] | etc.
   professions:    string[];      // IDs app : ["MG", "PED"]
 };
 
@@ -95,9 +95,19 @@ function parseRecord(record: AirtableRecord): Formation {
     .map((label) => AIRTABLE_PROFESSION_REVERSE[label] ?? null)
     .filter((id): id is string => id !== null);
 
-  // Bloc/Axe : singleSelect, valeur brute ("1", "2", "Bloc 1"…)
+  // Bloc/Axe : multipleSelects → tableau de chiffres ex. ["1", "2"]
   const blocAxeRaw = f[FIELD_IDS.blocAxe];
-  const blocAxe = blocAxeRaw ? String(blocAxeRaw).replace(/\D/g, "") || null : null;
+  let blocAxe: string[] | null = null;
+  if (Array.isArray(blocAxeRaw) && blocAxeRaw.length > 0) {
+    const digits = (blocAxeRaw as string[])
+      .map((v) => String(v).replace(/\D/g, ""))
+      .filter(Boolean);
+    blocAxe = digits.length > 0 ? digits : null;
+  } else if (blocAxeRaw) {
+    // rétrocompatibilité si le champ est encore un singleSelect
+    const digit = String(blocAxeRaw).replace(/\D/g, "");
+    blocAxe = digit ? [digit] : null;
+  }
 
   return {
     id:            record.id,
@@ -162,7 +172,7 @@ export async function getFormationsByProfession(professionId: string): Promise<F
 
   const formula = `AND(`
     + `FIND("${airtableLabel}", ARRAYJOIN({${COL.professions}}, ",")),`
-    + `OR({${COL.blocAxe}} = "1", {${COL.blocAxe}} = "2"),`
+    + `OR(FIND("1", ARRAYJOIN({${COL.blocAxe}}, ",")), FIND("2", ARRAYJOIN({${COL.blocAxe}}, ","))),`
     + `{${COL.statut}} = "Active"`
     + `)`;
 
@@ -175,7 +185,7 @@ export async function getFormationsByProfession(professionId: string): Promise<F
  */
 export async function getAllFormations(): Promise<Formation[]> {
   const formula = `AND(`
-    + `OR({${COL.blocAxe}} = "1", {${COL.blocAxe}} = "2"),`
+    + `OR(FIND("1", ARRAYJOIN({${COL.blocAxe}}, ",")), FIND("2", ARRAYJOIN({${COL.blocAxe}}, ","))),`
     + `{${COL.statut}} = "Active"`
     + `)`;
 
@@ -218,9 +228,17 @@ export function selectFormationsForReport(
   }
 
   const result: Formation[] = [];
+  const used = new Set<string>();
 
-  result.push(...pickForBloc(allFormations.filter((f) => f.blocAxe === "1"), countNeeded(bloc1Status)));
-  result.push(...pickForBloc(allFormations.filter((f) => f.blocAxe === "2"), countNeeded(bloc2Status)));
+  function pickForBlocDedup(pool: Formation[], count: number): Formation[] {
+    const available = pool.filter((f) => !used.has(f.id));
+    const picked = pickForBloc(available, count);
+    picked.forEach((f) => used.add(f.id));
+    return picked;
+  }
+
+  result.push(...pickForBlocDedup(allFormations.filter((f) => f.blocAxe?.includes("1")), countNeeded(bloc1Status)));
+  result.push(...pickForBlocDedup(allFormations.filter((f) => f.blocAxe?.includes("2")), countNeeded(bloc2Status)));
 
   // Bloc 3 : mention "Gestion de l'agressivité" déjà codée en dur dans le template
   // Ne rien ajouter ici pour éviter la duplication.
