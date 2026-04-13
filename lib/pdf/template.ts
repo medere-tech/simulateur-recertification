@@ -281,10 +281,10 @@ export function getReportHTML(data: ReportData): string {
 
   // Bloc statuses
   const blocs = [
-    { num: 1, name: prof.dimensions[0].name, status: getStatusLabel(data.bloc1Status), statusColor: getStatusColor(data.bloc1Status), score: getScore(data.bloc1Status), covered: true,  note: null },
-    { num: 2, name: prof.dimensions[1].name, status: getStatusLabel(data.bloc2Status), statusColor: getStatusColor(data.bloc2Status), score: getScore(data.bloc2Status), covered: true,  note: null },
-    { num: 3, name: prof.dimensions[2].name, status: getStatusLabel(data.bloc3Status), statusColor: getStatusColor(data.bloc3Status), score: getScore(data.bloc3Status), covered: true,  note: data.bloc3Status === 'a_faire' ? '1 formation disponible' : null },
-    { num: 4, name: prof.dimensions[3].name, status: getStatusLabel(data.bloc4Status), statusColor: getStatusColor(data.bloc4Status), score: getScore(data.bloc4Status), covered: false, note: null },
+    { num: 1, name: prof.dimensions[0].name, status: getStatusLabel(data.bloc1Status), statusColor: getStatusColor(data.bloc1Status), score: getScore(data.bloc1Status), covered: true, note: null },
+    { num: 2, name: prof.dimensions[1].name, status: getStatusLabel(data.bloc2Status), statusColor: getStatusColor(data.bloc2Status), score: getScore(data.bloc2Status), covered: true, note: null },
+    { num: 3, name: prof.dimensions[2].name, status: getStatusLabel(data.bloc3Status), statusColor: getStatusColor(data.bloc3Status), score: getScore(data.bloc3Status), covered: true, note: null },
+    { num: 4, name: prof.dimensions[3].name, status: getStatusLabel(data.bloc4Status), statusColor: getStatusColor(data.bloc4Status), score: getScore(data.bloc4Status), covered: true, note: null },
   ];
 
   return `<!DOCTYPE html>
@@ -620,7 +620,7 @@ export function getReportHTML(data: ReportData): string {
       <p>
         Les ${prof.terminologyPlural} 3 &amp; 4 sont entièrement nouveaux dans ce cycle.
         Tous les praticiens partent de zéro pour ces 4 actions.
-        Médéré ne propose pas encore de formations pour ces ${prof.terminologyPlural.toLowerCase()} sauf une formation sur l'agressivité des patients et de leur entourage (${prof.terminologyPlural.toLowerCase()} 3).
+        Médéré propose des formations couvrant les 4 ${prof.terminologyPlural.toLowerCase()}.
       </p>
     </div>
   </div>
@@ -742,11 +742,13 @@ export function getReportHTML(data: ReportData): string {
     </div>
 
     ${(() => {
-      const bloc1Fms = data.formations.filter(f => f.blocAxe?.includes('1'));
-      const bloc2Fms = data.formations.filter(f => f.blocAxe?.includes('2'));
-
-      const bloc1Needed = data.bloc1Status !== 'valide';
-      const bloc2Needed = data.bloc2Status !== 'valide';
+      const blocFms = [
+        data.formations.filter(f => f.blocAxe?.includes('1')),
+        data.formations.filter(f => f.blocAxe?.includes('2')),
+        data.formations.filter(f => f.blocAxe?.includes('3')),
+        data.formations.filter(f => f.blocAxe?.includes('4')),
+      ];
+      const blocStatuses = [data.bloc1Status, data.bloc2Status, data.bloc3Status, data.bloc4Status];
 
       function formationCard(f: Formation): string {
         const dureeLabel = f.duree ? `${f.duree}` : '';
@@ -762,54 +764,31 @@ export function getReportHTML(data: ReportData): string {
       }
 
       let html = '';
+      let hasAnySection = false;
 
-      if (!bloc1Needed && !bloc2Needed) {
+      blocStatuses.forEach((status, i) => {
+        const fms = blocFms[i];
+        if (status === 'valide' || fms.length === 0) return;
+        const marginTop = hasAnySection ? '12px' : '0';
         html += `
-          <div style="background:#F0FBF0;border:1px solid #2DA131;border-radius:8px;padding:14px 16px;margin-bottom:16px;">
-            <p style="font-size:11px;font-family:'Aileron-SemiBold';color:#1A6E1E;margin:0;">
-              Félicitations, vos ${prof.terminologyPlural} 1 et 2 sont validés !
-              Consultez notre catalogue pour maintenir vos compétences.
-            </p>
-          </div>`;
-      } else {
-        if (bloc1Needed && bloc1Fms.length > 0) {
-          html += `
-            <p style="font-size:11px;font-family:'Aileron-Bold';color:#302D2D;margin:0 0 8px;">
-              ${prof.terminology} 1 - ${prof.dimensions[0].name}
-            </p>`;
-          html += bloc1Fms.map(formationCard).join('');
-        }
+          <p style="font-size:11px;font-family:'Aileron-Bold';color:#302D2D;margin:${marginTop} 0 8px;">
+            ${prof.terminology} ${i + 1} - ${prof.dimensions[i].name}
+          </p>`;
+        html += fms.map(formationCard).join('');
+        hasAnySection = true;
+      });
 
-        if (bloc2Needed && bloc2Fms.length > 0) {
-          html += `
-            <p style="font-size:11px;font-family:'Aileron-Bold';color:#302D2D;margin:${bloc1Needed && bloc1Fms.length ? '12px' : '0'} 0 8px;">
-              ${prof.terminology} 2 - ${prof.dimensions[1].name}
-            </p>`;
-          html += bloc2Fms.map(formationCard).join('');
-        }
-
-        if ((bloc1Needed && bloc1Fms.length === 0) || (bloc2Needed && bloc2Fms.length === 0)) {
-          html += `
-            <div class="info-box resume" style="margin-top:12px;">
-              <p>
-                Les formations pour votre profil (${prof.label}) seront disponibles prochainement.
-                Contactez-nous au <strong style="color:#FFFFFF;">01&nbsp;88&nbsp;33&nbsp;95&nbsp;28</strong>
-                ou sur <strong style="color:#FFFFFF;">medere.fr</strong>.
+      if (!hasAnySection) {
+        const allValide = blocStatuses.every(s => s === 'valide');
+        if (allValide) {
+          html = `
+            <div style="background:#F0FBF0;border:1px solid #2DA131;border-radius:8px;padding:14px 16px;margin-bottom:16px;">
+              <p style="font-size:11px;font-family:'Aileron-SemiBold';color:#1A6E1E;margin:0;">
+                Félicitations, tous vos ${prof.terminologyPlural} sont validés !
+                Consultez notre catalogue pour maintenir vos compétences.
               </p>
             </div>`;
         }
-      }
-
-      if (data.bloc3Status === 'a_faire') {
-        html += `
-          <p style="font-size:11px;font-family:'Aileron-Bold';color:#302D2D;margin:12px 0 8px;">
-            ${prof.terminology} 3 - ${prof.dimensions[2].name}
-          </p>
-          <div style="border-left:3px solid ${prof.color};padding:8px 10px;margin-bottom:10px;background:#FAFAFA;border-radius:0 6px 6px 0;">
-            <p style="font-size:11px;font-family:'Aileron-Bold';color:#302D2D;margin:0 0 3px;">Gestion de l'agressivité</p>
-            <p style="font-size:10px;color:#686162;margin:0 0 4px;">E-Learning</p>
-            <a href="https://www.medere.fr/formations" style="font-size:10px;color:#006E90;text-decoration:underline;">En savoir plus sur medere.fr</a>
-          </div>`;
       }
 
       return html;

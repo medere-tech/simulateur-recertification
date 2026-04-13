@@ -1,6 +1,5 @@
 // Client Airtable - catalogue des formations Médéré
 // Base : app3GnMOzJn7VHMji
-// Médéré ne vend PAS les blocs/axes 3 & 4 → filtre strict
 
 import { CONFIG } from "@/lib/config";
 
@@ -234,10 +233,10 @@ export async function getFormationsByProfession(professionId: string): Promise<F
     console.log(`[AIRTABLE] Sample record[0] blocAxe:`, allActive[0].blocAxe);
   }
 
-  // Filtre côté code : profession + blocs 1 ou 2 uniquement (Médéré ne vend pas 3 & 4)
+  // Filtre côté code : profession + blocs 1, 2, 3 ou 4
   const filtered = allActive.filter((f) => {
     const matchProfession = f.professions.includes(professionId);
-    const matchBloc = f.blocAxe?.includes("1") || f.blocAxe?.includes("2");
+    const matchBloc = f.blocAxe?.some((b) => ["1", "2", "3", "4"].includes(b));
     return matchProfession && matchBloc;
   });
 
@@ -255,7 +254,7 @@ export async function getAllFormations(): Promise<Formation[]> {
   const formula = `{${COL.statut}} = "Active"`;
 
   const formations = await fetchFormations(formula);
-  return formations.filter((f) => f.blocAxe?.includes("1") || f.blocAxe?.includes("2"));
+  return formations.filter((f) => f.blocAxe?.some((b) => ["1", "2", "3", "4"].includes(b)));
 }
 
 /**
@@ -263,15 +262,17 @@ export async function getAllFormations(): Promise<Formation[]> {
  * - "valide" (2/2) → 0 formation pour ce bloc
  * - "en_cours" (1/2) → 1 formation max
  * - "a_faire" (0/2) → 2 formations max, formats diversifiés
- * Bloc 3 : géré en dur dans le template (Gestion de l'agressivité).
- * Bloc 4 : pas de formation Médéré disponible.
+ *
+ * Priorité : Bloc 1 → Bloc 2 → Bloc 3 → Bloc 4.
+ * Une formation couvrant plusieurs blocs n'est sélectionnée que pour le
+ * premier bloc qui en a besoin (déduplication par ID via Set).
  */
 export function selectFormationsForReport(
   allFormations: Formation[],
   bloc1Status: string,
   bloc2Status: string,
   bloc3Status: string,
-  _bloc4Status: string,
+  bloc4Status: string,
 ): Formation[] {
   function countNeeded(status: string): number {
     if (status === "valide")   return 0;
@@ -294,7 +295,7 @@ export function selectFormationsForReport(
   }
 
   const result: Formation[] = [];
-  const used = new Set<string>();
+  const used = new Set<string>(); // IDs des formations déjà sélectionnées
 
   function pickForBlocDedup(pool: Formation[], count: number): Formation[] {
     const available = pool.filter((f) => !used.has(f.id));
@@ -305,13 +306,8 @@ export function selectFormationsForReport(
 
   result.push(...pickForBlocDedup(allFormations.filter((f) => f.blocAxe?.includes("1")), countNeeded(bloc1Status)));
   result.push(...pickForBlocDedup(allFormations.filter((f) => f.blocAxe?.includes("2")), countNeeded(bloc2Status)));
-
-  // Bloc 3 : mention "Gestion de l'agressivité" déjà codée en dur dans le template
-  // Ne rien ajouter ici pour éviter la duplication.
-
-  // Bloc 4 : pas encore de catalogue Médéré — ignoré
-
-  void bloc3Status; // utilisé indirectement via le template
+  result.push(...pickForBlocDedup(allFormations.filter((f) => f.blocAxe?.includes("3")), countNeeded(bloc3Status)));
+  result.push(...pickForBlocDedup(allFormations.filter((f) => f.blocAxe?.includes("4")), countNeeded(bloc4Status)));
 
   return result;
 }
