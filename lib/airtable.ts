@@ -87,9 +87,15 @@ type AirtableResponse = {
 function parseRecord(record: AirtableRecord): Formation {
   const f = record.fields;
 
+  // Airtable renvoie les multipleSelects comme des objets {id, name} ou des strings
+  // (selon la version de l'API). On gère les deux formats.
+  type SelectItem = string | { id: string; name: string };
+  const extractName = (item: SelectItem): string =>
+    typeof item === "string" ? item : item.name;
+
   // Professions : multi-select → convertir les labels en IDs app
   const rawProfessions = Array.isArray(f[FIELD_IDS.professions])
-    ? (f[FIELD_IDS.professions] as string[])
+    ? (f[FIELD_IDS.professions] as SelectItem[]).map(extractName)
     : [];
   const professions = rawProfessions
     .map((label) => AIRTABLE_PROFESSION_REVERSE[label] ?? null)
@@ -99,7 +105,8 @@ function parseRecord(record: AirtableRecord): Formation {
   const blocAxeRaw = f[FIELD_IDS.blocAxe];
   let blocAxe: string[] | null = null;
   if (Array.isArray(blocAxeRaw) && blocAxeRaw.length > 0) {
-    const digits = (blocAxeRaw as string[])
+    const digits = (blocAxeRaw as SelectItem[])
+      .map(extractName)
       .map((v) => String(v).replace(/\D/g, ""))
       .filter(Boolean);
     blocAxe = digits.length > 0 ? digits : null;
@@ -170,13 +177,18 @@ export async function getFormationsByProfession(professionId: string): Promise<F
   const airtableLabel = AIRTABLE_PROFESSION_MAP[professionId];
   if (!airtableLabel) return [];
 
+  // Filtre serveur : profession + statut uniquement.
+  // Le filtre par bloc (1 & 2) se fait côté code après parsing,
+  // car ARRAYJOIN sur un multipleSelect d'objets n'est pas fiable.
   const formula = `AND(`
     + `FIND("${airtableLabel}", ARRAYJOIN({${COL.professions}}, ",")),`
-    + `OR(FIND("1", ARRAYJOIN({${COL.blocAxe}}, ",")), FIND("2", ARRAYJOIN({${COL.blocAxe}}, ","))),`
     + `{${COL.statut}} = "Active"`
     + `)`;
 
-  return fetchFormations(formula);
+  const formations = await fetchFormations(formula);
+
+  // Garde seulement les formations des blocs 1 ou 2 (Médéré ne vend pas 3 & 4)
+  return formations.filter((f) => f.blocAxe?.includes("1") || f.blocAxe?.includes("2"));
 }
 
 /**
@@ -184,12 +196,11 @@ export async function getFormationsByProfession(professionId: string): Promise<F
  * Utile pour un éventuel cache global ou pré-chargement PDF.
  */
 export async function getAllFormations(): Promise<Formation[]> {
-  const formula = `AND(`
-    + `OR(FIND("1", ARRAYJOIN({${COL.blocAxe}}, ",")), FIND("2", ARRAYJOIN({${COL.blocAxe}}, ","))),`
-    + `{${COL.statut}} = "Active"`
-    + `)`;
+  // Filtre serveur : statut uniquement. Filtrage par bloc côté code (cf. getFormationsByProfession).
+  const formula = `{${COL.statut}} = "Active"`;
 
-  return fetchFormations(formula);
+  const formations = await fetchFormations(formula);
+  return formations.filter((f) => f.blocAxe?.includes("1") || f.blocAxe?.includes("2"));
 }
 
 /**
