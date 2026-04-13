@@ -172,23 +172,40 @@ async function fetchFormations(filterFormula: string): Promise<Formation[]> {
 /**
  * Formations éligibles pour une profession - blocs/axes 1 & 2 uniquement,
  * statut "Active". Retourne [] si Airtable non configuré.
+ *
+ * Stratégie : filtre UNIQUEMENT sur le statut côté Airtable (FIND/ARRAYJOIN
+ * sur multipleSelects est peu fiable avec l'API REST). Profession et bloc
+ * sont filtrés côté code après parsing.
  */
 export async function getFormationsByProfession(professionId: string): Promise<Formation[]> {
   const airtableLabel = AIRTABLE_PROFESSION_MAP[professionId];
-  if (!airtableLabel) return [];
+  if (!airtableLabel) {
+    console.warn(`[AIRTABLE] Profession inconnue : "${professionId}"`);
+    return [];
+  }
 
-  // Filtre serveur : profession + statut uniquement.
-  // Le filtre par bloc (1 & 2) se fait côté code après parsing,
-  // car ARRAYJOIN sur un multipleSelect d'objets n'est pas fiable.
-  const formula = `AND(`
-    + `FIND("${airtableLabel}", ARRAYJOIN({${COL.professions}}, ",")),`
-    + `{${COL.statut}} = "Active"`
-    + `)`;
+  // Seul filtre serveur : statut = Active (évite FIND/ARRAYJOIN sur multipleSelects)
+  const formula = `{${COL.statut}} = "Active"`;
+  const allActive = await fetchFormations(formula);
 
-  const formations = await fetchFormations(formula);
+  console.log(`[AIRTABLE] Total formations actives récupérées : ${allActive.length}`);
+  console.log(`[AIRTABLE] Filtre profession : "${airtableLabel}" (code: ${professionId})`);
 
-  // Garde seulement les formations des blocs 1 ou 2 (Médéré ne vend pas 3 & 4)
-  return formations.filter((f) => f.blocAxe?.includes("1") || f.blocAxe?.includes("2"));
+  if (allActive.length > 0) {
+    console.log(`[AIRTABLE] Sample record[0] professions:`, allActive[0].professions);
+    console.log(`[AIRTABLE] Sample record[0] blocAxe:`, allActive[0].blocAxe);
+  }
+
+  // Filtre côté code : profession + blocs 1 ou 2 uniquement (Médéré ne vend pas 3 & 4)
+  const filtered = allActive.filter((f) => {
+    const matchProfession = f.professions.includes(professionId);
+    const matchBloc = f.blocAxe?.includes("1") || f.blocAxe?.includes("2");
+    return matchProfession && matchBloc;
+  });
+
+  console.log(`[AIRTABLE] Après filtrage profession+bloc : ${filtered.length} formations`);
+
+  return filtered;
 }
 
 /**
