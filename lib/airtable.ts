@@ -84,25 +84,56 @@ type AirtableResponse = {
   offset?: string;
 };
 
+// Noms de champs lisibles — utilisés comme clés alternatives si Airtable
+// retourne les données par nom plutôt que par ID.
+const FIELD_NAMES = {
+  titre:         "Nom de la formation",
+  duree:         "Durée totale",
+  format:        "Format",
+  url:           "URL Webflow",
+  indemnisation: "Indemnisation",
+  professions:   "Public concerné",
+  statut:        "Statut de la formation",
+  blocAxe:       "Bloc/Axe certification",
+  numeroDPC:     "Numéro DPC",
+} as const;
+
 function parseRecord(record: AirtableRecord): Formation {
   const f = record.fields;
 
-  // Airtable renvoie les multipleSelects comme des objets {id, name} ou des strings
-  // (selon la version de l'API). On gère les deux formats.
-  type SelectItem = string | { id: string; name: string };
+  // Airtable peut retourner les champs avec comme clé soit le field ID,
+  // soit le nom du champ selon comment l'appel est construit.
+  // On essaie d'abord par ID, puis par nom (fallback robuste).
+  function field<K extends keyof typeof FIELD_IDS>(key: K): unknown {
+    return f[FIELD_IDS[key]] ?? f[FIELD_NAMES[key as keyof typeof FIELD_NAMES]];
+  }
+
+  // Helpers pour les types Airtable
+  type SelectObj = { id: string; name: string; color?: string };
+  type SelectItem = string | SelectObj;
+
   const extractName = (item: SelectItem): string =>
     typeof item === "string" ? item : item.name;
 
-  // Professions : multi-select → convertir les labels en IDs app
-  const rawProfessions = Array.isArray(f[FIELD_IDS.professions])
-    ? (f[FIELD_IDS.professions] as SelectItem[]).map(extractName)
+  // singleSelect peut arriver comme objet {id, name, color} ou string directement
+  const extractSingle = (val: unknown): string => {
+    if (!val) return "";
+    if (typeof val === "object" && val !== null && "name" in val)
+      return (val as SelectObj).name;
+    return String(val);
+  };
+
+  // Professions : multipleSelects → labels Airtable → IDs app (MG, CD…)
+  const rawProfessions = field("professions");
+  const professionLabels: string[] = Array.isArray(rawProfessions)
+    ? (rawProfessions as SelectItem[]).map(extractName)
     : [];
-  const professions = rawProfessions
+  const professions = professionLabels
     .map((label) => AIRTABLE_PROFESSION_REVERSE[label] ?? null)
     .filter((id): id is string => id !== null);
 
-  // Bloc/Axe : multipleSelects → tableau de chiffres ex. ["1", "2"]
-  const blocAxeRaw = f[FIELD_IDS.blocAxe];
+  // Bloc/Axe : multipleSelects → chiffres ["1", "2"]
+  const blocAxeRaw = field("blocAxe");
   let blocAxe: string[] | null = null;
   if (Array.isArray(blocAxeRaw) && blocAxeRaw.length > 0) {
     const digits = (blocAxeRaw as SelectItem[])
@@ -111,19 +142,20 @@ function parseRecord(record: AirtableRecord): Formation {
       .filter(Boolean);
     blocAxe = digits.length > 0 ? digits : null;
   } else if (blocAxeRaw) {
-    // rétrocompatibilité si le champ est encore un singleSelect
-    const digit = String(blocAxeRaw).replace(/\D/g, "");
+    const digit = extractSingle(blocAxeRaw).replace(/\D/g, "");
     blocAxe = digit ? [digit] : null;
   }
 
   return {
     id:            record.id,
-    titre:         String(f[FIELD_IDS.titre]         ?? ""),
-    numeroDPC:     String(f[FIELD_IDS.numeroDPC]     ?? ""),
-    duree:         String(f[FIELD_IDS.duree]         ?? ""),
-    format:        String(f[FIELD_IDS.format]        ?? ""),
-    url:           String(f[FIELD_IDS.url]           ?? ""),
-    indemnisation: typeof f[FIELD_IDS.indemnisation] === "number" ? f[FIELD_IDS.indemnisation] as number : null,
+    titre:         String(field("titre")        ?? ""),
+    numeroDPC:     String(field("numeroDPC")    ?? ""),
+    duree:         String(field("duree")        ?? ""),
+    format:        extractSingle(field("format")),   // singleSelect → objet possible
+    url:           String(field("url")          ?? ""),
+    indemnisation: typeof field("indemnisation") === "number"
+                     ? field("indemnisation") as number
+                     : null,
     blocAxe,
     professions,
   };
@@ -163,6 +195,12 @@ async function fetchFormations(filterFormula: string): Promise<Formation[]> {
     allRecords = allRecords.concat(data.records);
     offset = data.offset;
   } while (offset);
+
+  // Log diagnostic : voir les clés exactes retournées par Airtable
+  if (allRecords.length > 0) {
+    console.log("[AIRTABLE] Raw record[0] keys:", Object.keys(allRecords[0]?.fields || {}));
+    console.log("[AIRTABLE] Raw record[0] fields:", JSON.stringify(allRecords[0]?.fields, null, 2).substring(0, 1000));
+  }
 
   return allRecords.map(parseRecord);
 }
