@@ -257,15 +257,27 @@ export async function getAllFormations(): Promise<Formation[]> {
   return formations.filter((f) => f.blocAxe?.some((b) => ["1", "2", "3", "4"].includes(b)));
 }
 
+// Nettoie le titre en supprimant les suffixes de format et "Programme intégré"
+// afin de comparer des sujets identiques déclinés en plusieurs formats.
+// Ex: "Repérer et agir..., Programme intégré (Classe virtuelle)" → "Repérer et agir..."
+function extractBaseName(titre: string): string {
+  return titre
+    .replace(/\s*\(E-[Ll]earning\)\s*$/, "")
+    .replace(/\s*\(Classe virtuelle\)\s*$/, "")
+    .replace(/\s*\(Présentiel\)\s*$/, "")
+    .replace(/,?\s*Programme intégré\s*$/, "")
+    .trim();
+}
+
 /**
  * Sélectionne les formations à afficher dans le PDF selon les statuts des blocs.
  * - "valide" (2/2) → 0 formation pour ce bloc
  * - "en_cours" (1/2) → 1 formation max
- * - "a_faire" (0/2) → 2 formations max, thèmes et formats diversifiés
+ * - "a_faire" (0/2) → 2 formations max, sujets et formats diversifiés
  *
  * Retourne un tableau structuré par bloc (max 8 formations au total).
- * Une formation déjà sélectionnée pour un bloc ne peut pas être reprise
- * pour un autre bloc (déduplication par titre).
+ * La déduplication se fait par baseName : un sujet sélectionné pour un bloc
+ * ne sera pas proposé à nouveau pour les blocs suivants.
  */
 export function selectFormationsForReport(
   allFormations: Formation[],
@@ -275,8 +287,8 @@ export function selectFormationsForReport(
   bloc4Status: string,
 ): { bloc: string; formations: Formation[] }[] {
   const result: { bloc: string; formations: Formation[] }[] = [];
-  const usedTitres = new Set<string>(); // Déduplication par titre exact
-  const usedThemes = new Set<string>(); // Diversité thématique inter-blocs
+  // Sujets déjà utilisés (partagé entre tous les blocs)
+  const usedBaseNames = new Set<string>();
 
   // Combien de formations par bloc selon le statut
   function maxForBloc(status: string): number {
@@ -285,96 +297,89 @@ export function selectFormationsForReport(
     return 2; // a_faire
   }
 
-  // Extraire un "thème" simplifié du titre pour éviter les doublons thématiques
-  // Ex: "Panorama de la vaccination..." → "vaccination"
-  function extractTheme(titre: string): string {
-    const stopWords = ["de","du","des","la","le","les","en","et",
-      "à","au","aux","un","une","pour","par","sur","dans","son",
-      "ses","sa","ce","cette","ces","qui","que","dont"];
-    const words = titre.toLowerCase()
-      .replace(/[,.:;!?()]/g, "")
-      .split(/\s+/)
-      .filter((w) => !stopWords.includes(w) && w.length > 2);
-    return words.slice(0, 3).join(" ");
+  const FORMAT_ORDER = ["E-Learning", "Classe virtuelle", "Présentiel"];
+
+  function bestVariant(variants: Formation[], preferDifferentFrom?: string): Formation {
+    return [...variants].sort((a, b) => {
+      // Si un format préféré est exclu, mettre les formats différents en premier
+      if (preferDifferentFrom) {
+        const aDiff = a.format !== preferDifferentFrom ? 0 : 1;
+        const bDiff = b.format !== preferDifferentFrom ? 0 : 1;
+        if (aDiff !== bDiff) return aDiff - bDiff;
+      }
+      const aIdx = FORMAT_ORDER.indexOf(a.format) === -1 ? 99 : FORMAT_ORDER.indexOf(a.format);
+      const bIdx = FORMAT_ORDER.indexOf(b.format) === -1 ? 99 : FORMAT_ORDER.indexOf(b.format);
+      return aIdx - bIdx;
+    })[0];
   }
 
   // Sélectionner les formations pour UN bloc
   function selectForBloc(blocNumber: string, max: number): Formation[] {
     if (max === 0) return [];
 
-    // Candidats : formations qui couvrent ce bloc ET pas déjà utilisées
+    // Candidats : formations qui couvrent ce bloc ET dont le sujet n'est pas déjà utilisé
     const candidates = allFormations.filter((f) =>
       f.blocAxe?.includes(blocNumber) &&
-      !usedTitres.has(f.titre)
+      !usedBaseNames.has(extractBaseName(f.titre))
     );
 
-    console.log(`[SELECT] Bloc ${blocNumber} - max: ${max} - candidates: ${candidates.length}`);
+    if (candidates.length === 0) {
+      console.log(`[SELECT] Bloc ${blocNumber} - max: ${max} - unique subjects: 0 - selected: []`);
+      return [];
+    }
 
-    if (candidates.length === 0) return [];
+    // Grouper par baseName → un "sujet" avec ses variantes de format
+    const grouped = new Map<string, Formation[]>();
+    for (const f of candidates) {
+      const base = extractBaseName(f.titre);
+      if (!grouped.has(base)) grouped.set(base, []);
+      grouped.get(base)!.push(f);
+    }
 
-    // Trier : E-Learning en premier, puis Classe virtuelle, puis Présentiel
-    const formatOrder = ["E-Learning", "Classe virtuelle", "Présentiel"];
-    const sorted = [...candidates].sort((a, b) => {
-      const aIdx = formatOrder.indexOf(a.format) === -1 ? 99 : formatOrder.indexOf(a.format);
-      const bIdx = formatOrder.indexOf(b.format) === -1 ? 99 : formatOrder.indexOf(b.format);
-      return aIdx - bIdx;
-    });
-
+    const uniqueSubjects = Array.from(grouped.entries());
     const selected: Formation[] = [];
 
-    // ÉTAPE 1 : Prendre la première formation dont le thème n'est pas encore utilisé
-    for (const f of sorted) {
-      const theme = extractTheme(f.titre);
-      if (!usedThemes.has(theme)) {
-        selected.push(f);
-        usedTitres.add(f.titre);
-        usedThemes.add(theme);
-        break;
+    // ÉTAPE 1 : Premier sujet → meilleur format (E-Learning prioritaire)
+    const [baseName1, variants1] = uniqueSubjects[0];
+    const pick1 = bestVariant(variants1);
+    selected.push(pick1);
+    usedBaseNames.add(baseName1);
+
+    // ÉTAPE 2 : Deuxième sujet DIFFÉRENT → format différent si possible
+    if (max >= 2 && uniqueSubjects.length > 1) {
+      const firstFormat = pick1.format;
+      let secondSubject: [string, Formation[]] | undefined;
+
+      // Priorité 1 : sujet différent qui dispose d'une variante de format différent
+      for (let i = 1; i < uniqueSubjects.length; i++) {
+        const [bn, vars] = uniqueSubjects[i];
+        if (usedBaseNames.has(bn)) continue;
+        if (vars.some((v) => v.format !== firstFormat)) {
+          secondSubject = [bn, vars];
+          break;
+        }
+      }
+
+      // Priorité 2 : n'importe quel sujet différent
+      if (!secondSubject) {
+        for (let i = 1; i < uniqueSubjects.length; i++) {
+          const [bn, vars] = uniqueSubjects[i];
+          if (!usedBaseNames.has(bn)) {
+            secondSubject = [bn, vars];
+            break;
+          }
+        }
+      }
+
+      if (secondSubject) {
+        const [baseName2, variants2] = secondSubject;
+        const pick2 = bestVariant(variants2, firstFormat);
+        selected.push(pick2);
+        usedBaseNames.add(baseName2);
       }
     }
 
-    // Si aucun thème unique trouvé, prendre la première disponible
-    if (selected.length === 0 && sorted.length > 0) {
-      selected.push(sorted[0]);
-      usedTitres.add(sorted[0].titre);
-      usedThemes.add(extractTheme(sorted[0].titre));
-    }
-
-    // ÉTAPE 2 : Si max >= 2, prendre une deuxième formation
-    if (max >= 2 && selected.length === 1) {
-      const firstFormat = selected[0].format;
-
-      const remaining = sorted.filter((f) => !usedTitres.has(f.titre));
-
-      // Priorité 1 : format différent + thème différent
-      let second = remaining.find((f) =>
-        f.format !== firstFormat &&
-        !usedThemes.has(extractTheme(f.titre))
-      );
-      // Priorité 2 : thème différent (même format ok)
-      if (!second) {
-        second = remaining.find((f) => !usedThemes.has(extractTheme(f.titre)));
-      }
-      // Priorité 3 : format différent (même thème ok)
-      if (!second) {
-        second = remaining.find((f) => f.format !== firstFormat);
-      }
-      // Priorité 4 : n'importe quoi de restant
-      if (!second && remaining.length > 0) {
-        second = remaining[0];
-      }
-
-      if (second) {
-        selected.push(second);
-        usedTitres.add(second.titre);
-        usedThemes.add(extractTheme(second.titre));
-      }
-    }
-
-    for (const f of selected) {
-      console.log(`[SELECT]   → ${f.titre} | ${f.format}`);
-    }
-    console.log(`[SELECT] Bloc ${blocNumber} - selected: ${selected.length}`);
+    console.log(`[SELECT] Bloc ${blocNumber} - max: ${max} - unique subjects: ${uniqueSubjects.length} - selected:`, selected.map((f) => `${f.titre} | ${f.format}`));
 
     return selected;
   }
