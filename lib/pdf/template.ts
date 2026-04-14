@@ -743,10 +743,10 @@ export function getReportHTML(data: ReportData): string {
 
     ${(() => {
       function formationCard(f: Formation): string {
-        const dureeLabel = f.duree ? `${f.duree}` : '';
+        const dureeLabel = f.duree ? `${f.duree}h` : '';
         const link = f.url
-          ? `<a href="${f.url}" style="font-size:10px;color:#006E90;text-decoration:underline;">En savoir plus sur medere.fr</a>`
-          : '';
+          ? `<a href="${f.url}" style="font-size:10px;color:#006E90;text-decoration:underline;">En savoir plus</a>`
+          : `<a href="https://medere.fr/formations" style="font-size:10px;color:#006E90;text-decoration:underline;">En savoir plus sur medere.fr</a>`;
         return `
           <div style="border-left:3px solid ${prof.color};padding:8px 10px;margin-bottom:10px;background:#FAFAFA;border-radius:0 6px 6px 0;">
             <p style="font-size:11px;font-family:'Aileron-Bold';color:#302D2D;margin:0 0 3px;">${f.titre}</p>
