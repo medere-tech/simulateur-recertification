@@ -10,7 +10,7 @@ import { calculateScore, DpcFormations, EppActions, RelationPatient, SantePerso,
 import { GA4 } from "@/lib/ga4";
 import SiteHeader from "@/components/SiteHeader";
 import LeadForm from "@/components/LeadForm";
-import RdvModal from "@/components/RdvModal";
+
 import { CheckIcon, ArrowRightIcon } from "@/components/icons";
 
 // ─── Composant principal ──────────────────────────────────────────────────────
@@ -242,11 +242,9 @@ function Ecran8({
   profession: string;
   score: number;
 }) {
-  const [rdvOpen, setRdvOpen] = useState(false);
-
   function openRdv() {
     GA4.rdvClicked(profession, score);
-    setRdvOpen(true);
+    window.open('https://www.medere.fr/contact', '_blank');
   }
 
   return (
@@ -296,6 +294,9 @@ function Ecran8({
             Prendre rendez-vous
             <ArrowRightIcon size={18} />
           </button>
+          <p className="mt-2 text-sm text-center text-[#9C9494]">
+            Précisez dans votre message le jour et l&apos;heure auxquels vous souhaitez être rappelé(e).
+          </p>
         </div>
 
         {/* Citation confiance */}
@@ -310,7 +311,6 @@ function Ecran8({
       </div>
 
       {/* Modal RDV */}
-      <RdvModal isOpen={rdvOpen} onClose={() => setRdvOpen(false)} />
     </>
   );
 }
