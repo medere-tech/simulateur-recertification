@@ -261,11 +261,11 @@ export async function getAllFormations(): Promise<Formation[]> {
  * Sélectionne les formations à afficher dans le PDF selon les statuts des blocs.
  * - "valide" (2/2) → 0 formation pour ce bloc
  * - "en_cours" (1/2) → 1 formation max
- * - "a_faire" (0/2) → 2 formations max, formats diversifiés
+ * - "a_faire" (0/2) → 2 formations max, thèmes et formats diversifiés
  *
- * Priorité : Bloc 1 → Bloc 2 → Bloc 3 → Bloc 4.
- * Une formation couvrant plusieurs blocs n'est sélectionnée que pour le
- * premier bloc qui en a besoin (déduplication par ID via Set).
+ * Retourne un tableau structuré par bloc (max 8 formations au total).
+ * Une formation déjà sélectionnée pour un bloc ne peut pas être reprise
+ * pour un autre bloc (déduplication par titre).
  */
 export function selectFormationsForReport(
   allFormations: Formation[],
@@ -273,41 +273,127 @@ export function selectFormationsForReport(
   bloc2Status: string,
   bloc3Status: string,
   bloc4Status: string,
-): Formation[] {
-  function countNeeded(status: string): number {
+): { bloc: string; formations: Formation[] }[] {
+  const result: { bloc: string; formations: Formation[] }[] = [];
+  const usedTitres = new Set<string>(); // Déduplication par titre exact
+  const usedThemes = new Set<string>(); // Diversité thématique inter-blocs
+
+  // Combien de formations par bloc selon le statut
+  function maxForBloc(status: string): number {
     if (status === "valide")   return 0;
     if (status === "en_cours") return 1;
     return 2; // a_faire
   }
 
-  function pickForBloc(pool: Formation[], count: number): Formation[] {
-    if (count === 0 || pool.length === 0) return [];
-    if (count === 1) return [pool[0]];
+  // Extraire un "thème" simplifié du titre pour éviter les doublons thématiques
+  // Ex: "Panorama de la vaccination..." → "vaccination"
+  function extractTheme(titre: string): string {
+    const stopWords = ["de","du","des","la","le","les","en","et",
+      "à","au","aux","un","une","pour","par","sur","dans","son",
+      "ses","sa","ce","cette","ces","qui","que","dont"];
+    const words = titre.toLowerCase()
+      .replace(/[,.:;!?()]/g, "")
+      .split(/\s+/)
+      .filter((w) => !stopWords.includes(w) && w.length > 2);
+    return words.slice(0, 3).join(" ");
+  }
 
-    // Diversifier : 1ère E-Learning, 2ème format différent
-    const elearning = pool.filter((f) => f.format === "E-Learning");
-    const other     = pool.filter((f) => f.format !== "E-Learning");
+  // Sélectionner les formations pour UN bloc
+  function selectForBloc(blocNumber: string, max: number): Formation[] {
+    if (max === 0) return [];
 
-    if (elearning.length > 0 && other.length > 0) {
-      return [elearning[0], other[0]];
+    // Candidats : formations qui couvrent ce bloc ET pas déjà utilisées
+    const candidates = allFormations.filter((f) =>
+      f.blocAxe?.includes(blocNumber) &&
+      !usedTitres.has(f.titre)
+    );
+
+    console.log(`[SELECT] Bloc ${blocNumber} - max: ${max} - candidates: ${candidates.length}`);
+
+    if (candidates.length === 0) return [];
+
+    // Trier : E-Learning en premier, puis Classe virtuelle, puis Présentiel
+    const formatOrder = ["E-Learning", "Classe virtuelle", "Présentiel"];
+    const sorted = [...candidates].sort((a, b) => {
+      const aIdx = formatOrder.indexOf(a.format) === -1 ? 99 : formatOrder.indexOf(a.format);
+      const bIdx = formatOrder.indexOf(b.format) === -1 ? 99 : formatOrder.indexOf(b.format);
+      return aIdx - bIdx;
+    });
+
+    const selected: Formation[] = [];
+
+    // ÉTAPE 1 : Prendre la première formation dont le thème n'est pas encore utilisé
+    for (const f of sorted) {
+      const theme = extractTheme(f.titre);
+      if (!usedThemes.has(theme)) {
+        selected.push(f);
+        usedTitres.add(f.titre);
+        usedThemes.add(theme);
+        break;
+      }
     }
-    return pool.slice(0, 2);
+
+    // Si aucun thème unique trouvé, prendre la première disponible
+    if (selected.length === 0 && sorted.length > 0) {
+      selected.push(sorted[0]);
+      usedTitres.add(sorted[0].titre);
+      usedThemes.add(extractTheme(sorted[0].titre));
+    }
+
+    // ÉTAPE 2 : Si max >= 2, prendre une deuxième formation
+    if (max >= 2 && selected.length === 1) {
+      const firstFormat = selected[0].format;
+
+      const remaining = sorted.filter((f) => !usedTitres.has(f.titre));
+
+      // Priorité 1 : format différent + thème différent
+      let second = remaining.find((f) =>
+        f.format !== firstFormat &&
+        !usedThemes.has(extractTheme(f.titre))
+      );
+      // Priorité 2 : thème différent (même format ok)
+      if (!second) {
+        second = remaining.find((f) => !usedThemes.has(extractTheme(f.titre)));
+      }
+      // Priorité 3 : format différent (même thème ok)
+      if (!second) {
+        second = remaining.find((f) => f.format !== firstFormat);
+      }
+      // Priorité 4 : n'importe quoi de restant
+      if (!second && remaining.length > 0) {
+        second = remaining[0];
+      }
+
+      if (second) {
+        selected.push(second);
+        usedTitres.add(second.titre);
+        usedThemes.add(extractTheme(second.titre));
+      }
+    }
+
+    for (const f of selected) {
+      console.log(`[SELECT]   → ${f.titre} | ${f.format}`);
+    }
+    console.log(`[SELECT] Bloc ${blocNumber} - selected: ${selected.length}`);
+
+    return selected;
   }
 
-  const result: Formation[] = [];
-  const used = new Set<string>(); // IDs des formations déjà sélectionnées
+  // Traiter les blocs dans l'ordre
+  const blocs = [
+    { number: "1", status: bloc1Status },
+    { number: "2", status: bloc2Status },
+    { number: "3", status: bloc3Status },
+    { number: "4", status: bloc4Status },
+  ];
 
-  function pickForBlocDedup(pool: Formation[], count: number): Formation[] {
-    const available = pool.filter((f) => !used.has(f.id));
-    const picked = pickForBloc(available, count);
-    picked.forEach((f) => used.add(f.id));
-    return picked;
+  for (const bloc of blocs) {
+    const max = maxForBloc(bloc.status);
+    const formations = selectForBloc(bloc.number, max);
+    if (formations.length > 0) {
+      result.push({ bloc: bloc.number, formations });
+    }
   }
-
-  result.push(...pickForBlocDedup(allFormations.filter((f) => f.blocAxe?.includes("1")), countNeeded(bloc1Status)));
-  result.push(...pickForBlocDedup(allFormations.filter((f) => f.blocAxe?.includes("2")), countNeeded(bloc2Status)));
-  result.push(...pickForBlocDedup(allFormations.filter((f) => f.blocAxe?.includes("3")), countNeeded(bloc3Status)));
-  result.push(...pickForBlocDedup(allFormations.filter((f) => f.blocAxe?.includes("4")), countNeeded(bloc4Status)));
 
   return result;
 }

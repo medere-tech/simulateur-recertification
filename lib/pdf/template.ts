@@ -14,7 +14,7 @@ export interface ReportData {
   bloc2Status: string;
   bloc3Status: string;
   bloc4Status: string;
-  formations: Formation[];
+  formations: { bloc: string; formations: Formation[] }[];
 }
 
 // ─── Profession Config ───────────────────────────────────────────────
@@ -742,14 +742,6 @@ export function getReportHTML(data: ReportData): string {
     </div>
 
     ${(() => {
-      const blocFms = [
-        data.formations.filter(f => f.blocAxe?.includes('1')),
-        data.formations.filter(f => f.blocAxe?.includes('2')),
-        data.formations.filter(f => f.blocAxe?.includes('3')),
-        data.formations.filter(f => f.blocAxe?.includes('4')),
-      ];
-      const blocStatuses = [data.bloc1Status, data.bloc2Status, data.bloc3Status, data.bloc4Status];
-
       function formationCard(f: Formation): string {
         const dureeLabel = f.duree ? `${f.duree}` : '';
         const link = f.url
@@ -764,31 +756,26 @@ export function getReportHTML(data: ReportData): string {
       }
 
       let html = '';
-      let hasAnySection = false;
 
-      blocStatuses.forEach((status, i) => {
-        const fms = blocFms[i];
-        if (status === 'valide' || fms.length === 0) return;
-        const marginTop = hasAnySection ? '12px' : '0';
-        html += `
-          <p style="font-size:11px;font-family:'Aileron-Bold';color:#302D2D;margin:${marginTop} 0 8px;">
-            ${prof.terminology} ${i + 1} - ${prof.dimensions[i].name}
-          </p>`;
-        html += fms.map(formationCard).join('');
-        hasAnySection = true;
-      });
-
-      if (!hasAnySection) {
-        const allValide = blocStatuses.every(s => s === 'valide');
-        if (allValide) {
-          html = `
-            <div style="background:#F0FBF0;border:1px solid #2DA131;border-radius:8px;padding:14px 16px;margin-bottom:16px;">
-              <p style="font-size:11px;font-family:'Aileron-SemiBold';color:#1A6E1E;margin:0;">
-                Félicitations, tous vos ${prof.terminologyPlural} sont validés !
-                Consultez notre catalogue pour maintenir vos compétences.
-              </p>
-            </div>`;
-        }
+      if (data.formations.length === 0) {
+        html = `
+          <div style="background:#F0FBF0;border:1px solid #2DA131;border-radius:8px;padding:14px 16px;margin-bottom:16px;">
+            <p style="font-size:11px;font-family:'Aileron-SemiBold';color:#1A6E1E;margin:0;">
+              Félicitations ! Consultez notre catalogue sur
+              <a href="https://medere.fr/formations" style="color:#006E90;text-decoration:underline;">medere.fr</a>
+            </p>
+          </div>`;
+      } else {
+        data.formations.forEach(({ bloc, formations: fms }, idx) => {
+          const blocIndex = parseInt(bloc, 10) - 1;
+          const dimName = prof.dimensions[blocIndex]?.name ?? '';
+          const marginTop = idx > 0 ? '12px' : '0';
+          html += `
+            <p style="font-size:11px;font-family:'Aileron-Bold';color:#302D2D;margin:${marginTop} 0 8px;">
+              ${prof.terminology} ${bloc} — ${dimName}
+            </p>`;
+          html += fms.map(formationCard).join('');
+        });
       }
 
       return html;
