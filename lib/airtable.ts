@@ -97,6 +97,15 @@ const FIELD_NAMES = {
   numeroDPC:     "Numéro DPC",
 } as const;
 
+function normalizeUrl(url: string): string {
+  if (!url) return "";
+  const trimmed = url.trim();
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    return trimmed;
+  }
+  return "https://" + trimmed;
+}
+
 function parseRecord(record: AirtableRecord): Formation {
   const f = record.fields;
 
@@ -151,7 +160,7 @@ function parseRecord(record: AirtableRecord): Formation {
     numeroDPC:     String(field("numeroDPC")    ?? ""),
     duree:         String(field("duree")        ?? ""),
     format:        extractSingle(field("format")),   // singleSelect → objet possible
-    url:           String(field("url")          ?? ""),
+    url:           normalizeUrl(String(f[FIELD_IDS.url] ?? f[FIELD_NAMES.url] ?? "")),
     indemnisation: typeof field("indemnisation") === "number"
                      ? field("indemnisation") as number
                      : null,
@@ -201,7 +210,11 @@ async function fetchFormations(filterFormula: string): Promise<Formation[]> {
     console.log("[AIRTABLE] Raw record[0] fields:", JSON.stringify(allRecords[0]?.fields, null, 2).substring(0, 1000));
   }
 
-  return allRecords.map(parseRecord);
+  const formations = allRecords.map(parseRecord);
+  if (formations.length > 0) {
+    console.log("[AIRTABLE] Sample record[0] url:", formations[0].url);
+  }
+  return formations;
 }
 
 // ─── API publique ─────────────────────────────────────────────────────────────
