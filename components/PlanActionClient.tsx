@@ -10,6 +10,7 @@ import { calculateScore, DpcFormations, EppActions, RelationPatient, SantePerso,
 import { GA4 } from "@/lib/ga4";
 import SiteHeader from "@/components/SiteHeader";
 import LeadForm from "@/components/LeadForm";
+import RdvModal from "@/components/RdvModal";
 
 import { CheckIcon, ArrowRightIcon } from "@/components/icons";
 
@@ -26,6 +27,8 @@ export default function PlanActionClient() {
   const relationPatient = searchParams.get("relationPatient") as RelationPatient | null;
   const santePerso      = searchParams.get("santePerso")      as SantePerso      | null;
   const confirmed       = searchParams.get("confirmed")       === "true";
+  const email           = searchParams.get("email")           ?? "";
+  const phone           = searchParams.get("phone")           ?? "";
 
   const isValid =
     !!profession && !!diplomaYear && !!dpcFormations && !!eppActions &&
@@ -90,6 +93,9 @@ export default function PlanActionClient() {
               textOnAccent={textOnAccent}
               profession={profession!}
               score={totalScore}
+              urgency={urgency}
+              email={email}
+              phone={phone}
             />
           ) : (
             <Ecran7
@@ -235,16 +241,24 @@ function Ecran8({
   textOnAccent,
   profession,
   score,
+  urgency,
+  email,
+  phone,
 }: {
   profConfig: ProfConfig;
   accentColor: string;
   textOnAccent: string;
   profession: string;
   score: number;
+  urgency: string;
+  email: string;
+  phone: string;
 }) {
+  const [rdvOpen, setRdvOpen] = useState(false);
+
   function openRdv() {
     GA4.rdvClicked(profession, score);
-    window.open('https://www.medere.fr/contact', '_blank');
+    setRdvOpen(true);
   }
 
   return (
@@ -295,7 +309,7 @@ function Ecran8({
             <ArrowRightIcon size={18} />
           </button>
           <p className="mt-2 text-sm text-center text-[#9C9494]">
-            Précisez dans votre message le jour et l&apos;heure auxquels vous souhaitez être rappelé(e).
+            Un conseiller Médéré vous rappellera au créneau choisi.
           </p>
         </div>
 
@@ -311,6 +325,16 @@ function Ecran8({
       </div>
 
       {/* Modal RDV */}
+      <RdvModal
+        isOpen={rdvOpen}
+        onClose={() => setRdvOpen(false)}
+        email={email}
+        phone={phone}
+        profession={profession}
+        professionLabel={profConfig.label}
+        score={score}
+        urgency={urgency}
+      />
     </>
   );
 }

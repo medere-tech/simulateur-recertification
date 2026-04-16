@@ -6,8 +6,10 @@ import { generateReport } from "@/lib/pdf/generate";
 import { sendReportEmail } from "@/lib/email";
 import { CONFIG } from "@/lib/config";
 import { getFormationsByProfession, selectFormationsForReport } from "@/lib/airtable";
+import { PROFESSIONS } from "@/lib/professions";
 import type { ProfessionId } from "@/lib/professions";
 import type { DiplomaYear, DimensionStatus, Urgency } from "@/lib/scoring";
+import { sendSlackNotification } from "@/lib/slack";
 
 export const runtime = "nodejs";
 
@@ -16,6 +18,7 @@ type ReportRequestBody = {
   diplomaYear: DiplomaYear;
   dpcFormations: string;
   email: string;
+  phone?: string;
   score: number;
   urgency: Urgency;
   bloc1Status: DimensionStatus;
@@ -114,6 +117,20 @@ export async function POST(req: NextRequest) {
       if (!emailResult.success) {
         console.error("[/api/report] SMTP error:", emailResult.error);
       }
+    }
+
+    // Fire-and-forget Slack — ne bloque pas la réponse
+    if (body.sendEmail && body.email) {
+      const professionLabel = PROFESSIONS[body.profession]?.label ?? body.profession;
+      sendSlackNotification({
+        type: 'lead',
+        email: body.email,
+        phone: body.phone,
+        profession: body.profession,
+        professionLabel,
+        score: body.score,
+        urgency: body.urgency,
+      }).catch(err => console.error('[SLACK] Fire-and-forget error:', err));
     }
 
     return NextResponse.json({ success: true, pdf, filename, pdfSent });

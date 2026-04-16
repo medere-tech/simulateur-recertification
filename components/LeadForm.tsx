@@ -186,12 +186,14 @@ export default function LeadForm({
       fetch("/api/report", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, profession, diplomaYear, dpcFormations, eppActions, relationPatient, santePerso, score, urgency, bloc1Status, bloc2Status, bloc3Status, bloc4Status, sendEmail: true }),
+        body: JSON.stringify({ email, phone: phone.trim() || undefined, profession, diplomaYear, dpcFormations, eppActions, relationPatient, santePerso, score, urgency, bloc1Status, bloc2Status, bloc3Status, bloc4Status, sendEmail: true }),
       }).catch(() => {/* silencieux - génération PDF non bloquante */});
 
       // ── 4. Redirect vers confirmation ───────────────────────────────────────
       const sp = new URLSearchParams(planParams);
       sp.set("confirmed", "true");
+      sp.set("email", email);
+      if (phone.trim()) sp.set("phone", phone.trim());
       router.push(`/plan-action?${sp.toString()}`);
 
     } catch (err) {
