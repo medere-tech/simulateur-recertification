@@ -97,13 +97,7 @@ export default function RdvModal({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!canSubmit) {
-      console.log('[RDV FORM] canSubmit=false, submission blocked', {
-        prenom: !!prenom.trim(), nom: !!nom.trim(), email: !!emailVal.trim(),
-        phone: !!phoneVal.trim(), jourRappel: !!jourRappel, heureRappel: !!heureRappel,
-      });
-      return;
-    }
+    if (!canSubmit) return;
     setLoading(true);
     setError("");
 
@@ -120,8 +114,6 @@ export default function RdvModal({
       score,
       urgency,
     };
-    console.log('[RDV FORM] Submitting to /api/rdv:', body);
-
     try {
       const res = await fetch("/api/rdv", {
         method: "POST",
@@ -129,13 +121,11 @@ export default function RdvModal({
         body: JSON.stringify(body),
       });
       const data = await res.json() as { success: boolean; error?: string };
-      console.log('[RDV FORM] Response:', res.status, data);
       if (!res.ok || !data.success) {
         throw new Error(data.error ?? "Erreur lors de l'envoi.");
       }
       setSuccess(true);
     } catch (err) {
-      console.error('[RDV FORM] Error:', err);
       setError(err instanceof Error ? err.message : "Une erreur est survenue. Réessayez.");
     } finally {
       setLoading(false);
