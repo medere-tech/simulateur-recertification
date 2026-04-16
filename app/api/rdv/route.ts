@@ -1,6 +1,8 @@
 // POST /api/rdv - Demande de rappel téléphonique
 // 1. Notifie l'équipe commerciale via Slack
 // 2. Met à jour le contact HubSpot existant (créé à l'étape email)
+// NOTE : Slack + HubSpot sont awaités avec un timeout de 5s
+//        pour éviter d'être tués par Vercel avant completion
 
 import { NextRequest, NextResponse } from "next/server";
 import { sendSlackNotification } from "@/lib/slack";
@@ -52,6 +54,7 @@ async function updateHubSpotContact(payload: RdvPayload): Promise<void> {
   );
 
   const searchData = await searchResponse.json() as { results?: { id: string }[] };
+  console.log('[HUBSPOT] Search result count:', searchData.results?.length ?? 0);
 
   if (!searchData.results?.length) {
     console.log('[HUBSPOT] Contact non trouvé pour:', payload.email);
@@ -61,7 +64,7 @@ async function updateHubSpotContact(payload: RdvPayload): Promise<void> {
   const contactId = searchData.results[0].id;
 
   // 2. Mettre à jour les champs standards uniquement
-  await fetch(
+  const patchRes = await fetch(
     `https://api.hubapi.com/crm/v3/objects/contacts/${contactId}`,
     {
       method: 'PATCH',
@@ -79,10 +82,17 @@ async function updateHubSpotContact(payload: RdvPayload): Promise<void> {
     }
   );
 
-  console.log('[HUBSPOT] Contact mis à jour:', contactId);
+  if (patchRes.ok) {
+    console.log('[HUBSPOT] Contact mis à jour:', contactId);
+  } else {
+    const errBody = await patchRes.text();
+    console.error('[HUBSPOT] PATCH failed:', patchRes.status, errBody);
+  }
 }
 
 export async function POST(req: NextRequest) {
+  console.log('[RDV API] Request received');
+
   let payload: Partial<RdvPayload>;
 
   try {
@@ -93,6 +103,10 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
+
+  console.log('[RDV API] Body:', JSON.stringify(payload));
+  console.log('[RDV API] HUBSPOT_API_KEY exists:', !!process.env.HUBSPOT_API_KEY);
+  console.log('[RDV API] SLACK_WEBHOOK_URL exists:', !!process.env.SLACK_WEBHOOK_URL);
 
   const {
     prenom,
@@ -118,6 +132,7 @@ export async function POST(req: NextRequest) {
     !profession?.trim() ||
     typeof score !== "number"
   ) {
+    console.log('[RDV API] Validation failed');
     return NextResponse.json(
       { success: false, error: "Champs obligatoires manquants" },
       { status: 422 }
@@ -141,15 +156,19 @@ export async function POST(req: NextRequest) {
     urgency:      urgency || "vert",
   };
 
-  // Fire-and-forget Slack — ne bloque pas la réponse
-  sendSlackNotification({
-    type: "rdv",
-    ...fullPayload,
-  }).catch((err) => console.error('[SLACK] Fire-and-forget error:', err));
+  // Lance Slack + HubSpot en parallèle et attend (max 5s)
+  // Critique sur Vercel : sans await, les promesses sont tuées au return
+  const slackPromise = sendSlackNotification({ type: "rdv", ...fullPayload })
+    .catch((err) => console.error('[SLACK] Error:', err));
 
-  // Fire-and-forget HubSpot — ne bloque pas la réponse
-  updateHubSpotContact(fullPayload)
-    .catch((err) => console.error('[HUBSPOT] Erreur mise à jour:', err));
+  const hubspotPromise = updateHubSpotContact(fullPayload)
+    .catch((err) => console.error('[HUBSPOT] Error:', err));
 
+  await Promise.race([
+    Promise.all([slackPromise, hubspotPromise]),
+    new Promise<void>((resolve) => setTimeout(resolve, 5000)),
+  ]);
+
+  console.log('[RDV API] Done, returning success');
   return NextResponse.json({ success: true });
 }

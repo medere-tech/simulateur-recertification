@@ -40,8 +40,6 @@ Si vous souhaitez être accompagné dans votre démarche de certification, notre
 Tél. : 01 88 33 95 28
 Email : contact@medere.fr
 
-Vous pouvez également réserver un créneau directement :
-https://meetings-eu1.hubspot.com/
 
 ${closing}
 

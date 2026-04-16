@@ -97,34 +97,45 @@ export default function RdvModal({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!canSubmit) return;
+    if (!canSubmit) {
+      console.log('[RDV FORM] canSubmit=false, submission blocked', {
+        prenom: !!prenom.trim(), nom: !!nom.trim(), email: !!emailVal.trim(),
+        phone: !!phoneVal.trim(), jourRappel: !!jourRappel, heureRappel: !!heureRappel,
+      });
+      return;
+    }
     setLoading(true);
     setError("");
+
+    const body = {
+      prenom:       prenom.trim(),
+      nom:          nom.trim(),
+      email:        emailVal.trim(),
+      phone:        phoneVal.trim(),
+      jourRappel,
+      heureRappel,
+      message:      message.trim() || undefined,
+      profession,
+      professionLabel,
+      score,
+      urgency,
+    };
+    console.log('[RDV FORM] Submitting to /api/rdv:', body);
 
     try {
       const res = await fetch("/api/rdv", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prenom: prenom.trim(),
-          nom: nom.trim(),
-          email: emailVal.trim(),
-          phone: phoneVal.trim(),
-          jourRappel,
-          heureRappel,
-          message: message.trim() || undefined,
-          profession,
-          professionLabel,
-          score,
-          urgency,
-        }),
+        body: JSON.stringify(body),
       });
-      if (!res.ok) {
-        const data = await res.json() as { error?: string };
+      const data = await res.json() as { success: boolean; error?: string };
+      console.log('[RDV FORM] Response:', res.status, data);
+      if (!res.ok || !data.success) {
         throw new Error(data.error ?? "Erreur lors de l'envoi.");
       }
       setSuccess(true);
     } catch (err) {
+      console.error('[RDV FORM] Error:', err);
       setError(err instanceof Error ? err.message : "Une erreur est survenue. Réessayez.");
     } finally {
       setLoading(false);
