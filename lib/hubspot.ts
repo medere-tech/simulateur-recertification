@@ -7,7 +7,7 @@ export type HubSpotContact = {
   email: string;
   firstname?: string;
   phone?: string;
-  certification_profession: "MG" | "CD" | "GO_GM" | "PED" | "PSY" | "AUTRE";
+  certification_profession: "MG" | "CD" | "GO_GM" | "PED" | "PSY" | "Autre";
 };
 
 // Mapping profession app → valeur HubSpot
@@ -17,7 +17,7 @@ const PROFESSION_MAP: Record<string, HubSpotContact["certification_profession"]>
   GO:    "GO_GM",
   PED:   "PED",
   PSY:   "PSY",
-  AUTRE: "AUTRE",
+  AUTRE: "Autre",
 };
 
 function authHeaders() {

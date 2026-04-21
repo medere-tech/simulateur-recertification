@@ -467,7 +467,7 @@ export function selectFormationsForReport(
     return 2; // a_faire
   }
 
-  const FORMAT_ORDER = ["E-Learning", "Classe virtuelle", "Présentiel"];
+  const FORMAT_ORDER = ["Présentiel", "Classe virtuelle", "E-Learning"];
 
   function bestVariant(variants: Formation[], preferDifferentFrom?: string): Formation {
     return [...variants].sort((a, b) => {
@@ -523,9 +523,6 @@ export function selectFormationsForReport(
     }
 
     const uniqueSubjects = Array.from(grouped.entries());
-
-    console.log(`[SELECT] Bloc ${blocNumber} - profession: ${professionCode}`);
-    console.log(`[SELECT] First 3 subjects after priority sort:`, uniqueSubjects.slice(0, 3).map(([base]) => base.substring(0, 50)));
     const selected: Formation[] = [];
 
     // ÉTAPE 1 : Premier sujet → meilleur format (E-Learning prioritaire)
