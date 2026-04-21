@@ -19,12 +19,12 @@ type Props = {
 };
 
 const HEURES = [
-  "8h - 10h",
+  "9h - 10h",
   "10h - 12h",
   "12h - 14h",
   "14h - 16h",
   "16h - 18h",
-  "18h - 20h",
+  "18h - 18h30",
 ];
 
 export default function RdvModal({
