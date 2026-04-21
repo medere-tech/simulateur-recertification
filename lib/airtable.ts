@@ -270,6 +270,49 @@ export async function getAllFormations(): Promise<Formation[]> {
   return formations.filter((f) => f.blocAxe?.some((b) => ["1", "2", "3", "4"].includes(b)));
 }
 
+// ─── Formations prioritaires par profession et par bloc ───────────────────────
+// Ordre de priorité défini par Noémie & Maylis. Le premier élément est le plus
+// prioritaire. Clé = code profession (MG, CD, …), valeur = map bloc → numéros DPC.
+
+const PRIORITY_FORMATIONS: Record<string, Record<string, string[]>> = {
+  MG: {
+    '1': ['92622425403','92622425413','92622325290','92622525448','92622626012'],
+    '2': ['92622425403','92622425413','92622325290','92622525448','92622525483'],
+    '3': ['92622525457','92622325304','92622325255','92622525463'],
+    '4': ['92622425432','92622325304'],
+  },
+  CD: {
+    '1': ['92622425417','92622525437','92622525476','92622425420','92622626002','92622325055'],
+    '2': ['92622425417','92622525437','92622525476','92622425420','92622325055'],
+    '3': ['92622325304'],
+    '4': ['92622325304','92622325055'],
+  },
+  PSY: {
+    '1': ['92622525458','92622525450','92622525448','92622325290','92622525454','92622626012'],
+    '2': ['92622525458','92622525450','92622525448','92622325316','92622525454','92622525457'],
+    '3': ['92622525457','92622525454','92622325304'],
+    '4': ['92622325304'],
+  },
+  PED: {
+    '1': ['92622525456','92622525460','92622325290','92622525450','92622425429','92622626012'],
+    '2': ['92622525456','92622525460','92622325290','92622525450','92622425429'],
+    '3': ['92622325304','92622525457'],
+    '4': ['92622425432','92622325304'],
+  },
+  GO: {
+    '1': ['92622626003','92622425432','92622626012','92622525463','92622325024'],
+    '2': ['92622626003','92622525463','92622325260'],
+    '3': ['92622325304','92622525463'],
+    '4': ['92622425432','92622325304'],
+  },
+  AUTRE: {
+    '1': ['92622626003','92622525457','92622325300','92622425432','92622626012'],
+    '2': ['92622525463','92622626003','92622525457','92622325300','92622525439'],
+    '3': ['92622525457','92622325304','92622325255','92622525463'],
+    '4': ['92622425432','92622325304','92622425434'],
+  },
+};
+
 // Nettoie le titre en supprimant les suffixes de format et "Programme intégré"
 // afin de comparer des sujets identiques déclinés en plusieurs formats.
 // Ex: "Repérer et agir..., Programme intégré (Classe virtuelle)" → "Repérer et agir..."
@@ -294,6 +337,7 @@ function extractBaseName(titre: string): string {
  */
 export function selectFormationsForReport(
   allFormations: Formation[],
+  professionCode: string,
   bloc1Status: string,
   bloc2Status: string,
   bloc3Status: string,
@@ -341,9 +385,25 @@ export function selectFormationsForReport(
       return [];
     }
 
-    // Grouper par baseName → un "sujet" avec ses variantes de format
+    // Récupérer la liste de priorité pour cette profession et ce bloc
+    const priorityList = PRIORITY_FORMATIONS[professionCode]?.[blocNumber] ?? [];
+
+    // Trier les candidats par priorité (ordre Noémie/Maylis), puis par format
+    const sortedCandidates = [...candidates].sort((a, b) => {
+      const aIdx = priorityList.indexOf(a.numeroDPC);
+      const bIdx = priorityList.indexOf(b.numeroDPC);
+      const aPriority = aIdx === -1 ? 999 : aIdx;
+      const bPriority = bIdx === -1 ? 999 : bIdx;
+      if (aPriority !== bPriority) return aPriority - bPriority;
+      // À priorité égale : E-Learning > Classe virtuelle > Présentiel
+      const aFmt = FORMAT_ORDER.indexOf(a.format) === -1 ? 99 : FORMAT_ORDER.indexOf(a.format);
+      const bFmt = FORMAT_ORDER.indexOf(b.format) === -1 ? 99 : FORMAT_ORDER.indexOf(b.format);
+      return aFmt - bFmt;
+    });
+
+    // Grouper par baseName en préservant l'ordre de priorité (premier = plus prioritaire)
     const grouped = new Map<string, Formation[]>();
-    for (const f of candidates) {
+    for (const f of sortedCandidates) {
       const base = extractBaseName(f.titre);
       if (!grouped.has(base)) grouped.set(base, []);
       grouped.get(base)!.push(f);

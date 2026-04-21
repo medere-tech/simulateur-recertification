@@ -77,6 +77,7 @@ export async function POST(req: NextRequest) {
     console.log(`[REPORT] Formations reçues d'Airtable pour ${body.profession} : ${allFormations.length}`);
     const formations = selectFormationsForReport(
       allFormations,
+      body.profession,
       body.bloc1Status,
       body.bloc2Status,
       body.bloc3Status,
