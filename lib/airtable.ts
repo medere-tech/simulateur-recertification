@@ -276,40 +276,153 @@ export async function getAllFormations(): Promise<Formation[]> {
 
 const PRIORITY_FORMATIONS: Record<string, Record<string, string[]>> = {
   MG: {
-    '1': ['92622425403','92622425413','92622325290','92622525448','92622626012'],
-    '2': ['92622425403','92622425413','92622325290','92622525448','92622525483'],
-    '3': ['92622525457','92622325304','92622325255','92622525463'],
-    '4': ['92622425432','92622325304'],
+    '1': [
+      'Dermoscopie en médecine générale',
+      'Les troubles du sommeil : les spécificités diagnostiques en médecine générale',
+      'Trouble du neurodéveloppement / TDAH : repérage, diagnostic et prise en charge chez l\'enfant après 7 ans, l\'adolescent et l\'adulte',
+      'Addiction aux substances illicites et chemsex : repérage, accompagnement et prise en charge',
+      'L\'IA en santé pour les médecins',
+    ],
+    '2': [
+      'Dermoscopie en médecine générale',
+      'Les troubles du sommeil : les spécificités diagnostiques en médecine générale',
+      'Trouble du neurodéveloppement / TDAH : repérage, diagnostic et prise en charge chez l\'enfant après 7 ans, l\'adolescent et l\'adulte',
+      'Addiction aux substances illicites et chemsex : repérage, accompagnement et prise en charge',
+      'Dépistage d\'un trouble du spectre autistique au cours des examens obligatoires de l\'enfant',
+    ],
+    '3': [
+      'Repérer et agir face aux violences faites aux enfants',
+      'Gestion de la violence et de l\'agressivité des patients et de leur entourage',
+      'Numérique en santé : la téléconsultation, bonnes pratiques et pertinence',
+      'Parler de sexualité en consultation : à vous d\'oser !',
+    ],
+    '4': [
+      'Perturbateurs endocriniens : quels risques pour la santé ?',
+      'Gestion de la violence et de l\'agressivité des patients et de leur entourage',
+    ],
   },
   CD: {
-    '1': ['92622425417','92622525437','92622525476','92622425420','92622626002','92622325055'],
-    '2': ['92622425417','92622525437','92622525476','92622425420','92622325055'],
-    '3': ['92622325304'],
-    '4': ['92622325304','92622325055'],
+    '1': [
+      'Prise en charge non chirurgicale des maladies parodontales : du diagnostic au traitement',
+      'Techniques contemporaines des restaurations antérieures directes et indirectes : comprendre les protocoles',
+      'Les bruxismes : comprendre, dépister et prendre en charge en odontologie',
+      'Formation validante Cone Beam CT (CBCT)',
+      'Le retraitement endodontique : de l\'échec à la réussite clinique',
+      'Radioprotection des patients en chirurgie-dentaire',
+    ],
+    '2': [
+      'Prise en charge non chirurgicale des maladies parodontales : du diagnostic au traitement',
+      'Techniques contemporaines des restaurations antérieures directes et indirectes : comprendre les protocoles',
+      'Les bruxismes : comprendre, dépister et prendre en charge en odontologie',
+      'Formation validante Cone Beam CT (CBCT)',
+      'Radioprotection des patients en chirurgie-dentaire',
+    ],
+    '3': [
+      'Gestion de la violence et de l\'agressivité des patients et de leur entourage',
+    ],
+    '4': [
+      'Gestion de la violence et de l\'agressivité des patients et de leur entourage',
+      'Radioprotection des patients en chirurgie-dentaire',
+    ],
   },
   PSY: {
-    '1': ['92622525458','92622525450','92622525448','92622325290','92622525454','92622626012'],
-    '2': ['92622525458','92622525450','92622525448','92622325316','92622525454','92622525457'],
-    '3': ['92622525457','92622525454','92622325304'],
-    '4': ['92622325304'],
+    '1': [
+      'Stratégies diagnostiques et thérapeutiques dans la prise en charge des troubles bipolaires',
+      'Refus scolaire anxieux : repérage et accompagnement',
+      'Addiction aux substances illicites et chemsex : repérage, accompagnement et prise en charge',
+      'Trouble du neurodéveloppement / TDAH : repérage, diagnostic et prise en charge chez l\'enfant après 7 ans, l\'adolescent et l\'adulte',
+      'L\'hypnose thérapeutique en psychiatrie',
+      'L\'IA en santé pour les médecins',
+    ],
+    '2': [
+      'Stratégies diagnostiques et thérapeutiques dans la prise en charge des troubles bipolaires',
+      'Refus scolaire anxieux : repérage et accompagnement',
+      'Addiction aux substances illicites et chemsex : repérage, accompagnement et prise en charge',
+      'Trouble du neurodéveloppement / TDAH : repérage, diagnostic et prise en charge chez l\'enfant après 7 ans, l\'adolescent et l\'adulte',
+      'L\'hypnose thérapeutique en psychiatrie',
+      'Repérer et agir face aux violences faites aux enfants',
+    ],
+    '3': [
+      'Repérer et agir face aux violences faites aux enfants',
+      'L\'hypnose thérapeutique en psychiatrie',
+      'Gestion de la violence et de l\'agressivité des patients et de leur entourage',
+    ],
+    '4': [
+      'Gestion de la violence et de l\'agressivité des patients et de leur entourage',
+    ],
   },
   PED: {
-    '1': ['92622525456','92622525460','92622325290','92622525450','92622425429','92622626012'],
-    '2': ['92622525456','92622525460','92622325290','92622525450','92622425429'],
-    '3': ['92622325304','92622525457'],
-    '4': ['92622425432','92622325304'],
+    '1': [
+      'Repérer et agir face aux violences faites aux enfants',
+      'Anciens grands prématurés : spécificité de la prise en charge et parcours de soins',
+      'Trouble du neurodéveloppement / TDAH : repérage, diagnostic et prise en charge chez l\'enfant après 7 ans, l\'adolescent et l\'adulte',
+      'Refus scolaire anxieux : repérage et accompagnement',
+      'Dépistage des troubles du sommeil dans le suivi de l\'enfant',
+      'L\'IA en santé pour les médecins',
+    ],
+    '2': [
+      'Repérer et agir face aux violences faites aux enfants',
+      'Anciens grands prématurés : spécificité de la prise en charge et parcours de soins',
+      'Trouble du neurodéveloppement / TDAH : repérage, diagnostic et prise en charge chez l\'enfant après 7 ans, l\'adolescent et l\'adulte',
+      'Refus scolaire anxieux : repérage et accompagnement',
+      'Dépistage des troubles du sommeil dans le suivi de l\'enfant',
+    ],
+    '3': [
+      'Gestion de la violence et de l\'agressivité des patients et de leur entourage',
+      'Repérer et agir face aux violences faites aux enfants',
+    ],
+    '4': [
+      'Perturbateurs endocriniens : quels risques pour la santé ?',
+      'Gestion de la violence et de l\'agressivité des patients et de leur entourage',
+    ],
   },
   GO: {
-    '1': ['92622626003','92622425432','92622626012','92622525463','92622325024'],
-    '2': ['92622626003','92622525463','92622325260'],
-    '3': ['92622325304','92622525463'],
-    '4': ['92622425432','92622325304'],
+    '1': [
+      'Santé mentale périnatale : repérage et prise en soin coordonnée',
+      'Perturbateurs endocriniens : quels risques pour la santé ?',
+      'L\'IA en santé pour les médecins',
+      'Parler de sexualité en consultation : à vous d\'oser !',
+      'Diagnostic et prise en charge de l\'endométriose par le médecin spécialiste',
+    ],
+    '2': [
+      'Santé mentale périnatale : repérage et prise en soin coordonnée',
+      'Parler de sexualité en consultation : à vous d\'oser !',
+      'Impacts du cannabis sur la santé',
+    ],
+    '3': [
+      'Gestion de la violence et de l\'agressivité des patients et de leur entourage',
+      'Parler de sexualité en consultation : à vous d\'oser !',
+    ],
+    '4': [
+      'Perturbateurs endocriniens : quels risques pour la santé ?',
+      'Gestion de la violence et de l\'agressivité des patients et de leur entourage',
+    ],
   },
   AUTRE: {
-    '1': ['92622626003','92622525457','92622325300','92622425432','92622626012'],
-    '2': ['92622525463','92622626003','92622525457','92622325300','92622525439'],
-    '3': ['92622525457','92622325304','92622325255','92622525463'],
-    '4': ['92622425432','92622325304','92622425434'],
+    '1': [
+      'Santé mentale périnatale : repérage et prise en soin coordonnée',
+      'Repérer et agir face aux violences faites aux enfants',
+      'Panorama de la vaccination pour les médecins généralistes, pédiatres et les sage-femmes : actualités et controverses',
+      'Perturbateurs endocriniens : quels risques pour la santé ?',
+      'L\'IA en santé pour les médecins',
+    ],
+    '2': [
+      'Parler de sexualité en consultation : à vous d\'oser !',
+      'Santé mentale périnatale : repérage et prise en soin coordonnée',
+      'Repérer et agir face aux violences faites aux enfants',
+      'Panorama de la vaccination pour les médecins généralistes, pédiatres et les sage-femmes : actualités et controverses',
+      'Maladie de Parkinson : prise en charge et parcours de soins',
+    ],
+    '3': [
+      'Repérer et agir face aux violences faites aux enfants',
+      'Gestion de la violence et de l\'agressivité des patients et de leur entourage',
+      'Numérique en santé : la téléconsultation, bonnes pratiques et pertinence',
+      'Parler de sexualité en consultation : à vous d\'oser !',
+    ],
+    '4': [
+      'Perturbateurs endocriniens : quels risques pour la santé ?',
+      'Gestion de la violence et de l\'agressivité des patients et de leur entourage',
+    ],
   },
 };
 
@@ -390,8 +503,8 @@ export function selectFormationsForReport(
 
     // Trier les candidats par priorité (ordre Noémie/Maylis), puis par format
     const sortedCandidates = [...candidates].sort((a, b) => {
-      const aIdx = priorityList.indexOf(a.numeroDPC);
-      const bIdx = priorityList.indexOf(b.numeroDPC);
+      const aIdx = priorityList.indexOf(extractBaseName(a.titre));
+      const bIdx = priorityList.indexOf(extractBaseName(b.titre));
       const aPriority = aIdx === -1 ? 999 : aIdx;
       const bPriority = bIdx === -1 ? 999 : bIdx;
       if (aPriority !== bPriority) return aPriority - bPriority;
@@ -410,6 +523,9 @@ export function selectFormationsForReport(
     }
 
     const uniqueSubjects = Array.from(grouped.entries());
+
+    console.log(`[SELECT] Bloc ${blocNumber} - profession: ${professionCode}`);
+    console.log(`[SELECT] First 3 subjects after priority sort:`, uniqueSubjects.slice(0, 3).map(([base]) => base.substring(0, 50)));
     const selected: Formation[] = [];
 
     // ÉTAPE 1 : Premier sujet → meilleur format (E-Learning prioritaire)
