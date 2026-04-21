@@ -208,7 +208,7 @@ export default function LeadForm({
       {/* ── Email ────────────────────────────────────────────────────── */}
       <div>
         <label htmlFor="email" className="mb-1.5 block text-sm font-semibold text-[#302D2D]">
-          Email professionnel{" "}
+          Votre adresse email{" "}
           <span aria-hidden="true" className="text-[#CC0000]">*</span>
         </label>
         <FieldWrapper validation={emailV}>

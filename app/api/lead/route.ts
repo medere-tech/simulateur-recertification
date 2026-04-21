@@ -27,20 +27,9 @@ function isRateLimited(ip: string): boolean {
 
 // ─── Validation email (miroir côté serveur) ───────────────────────────────────
 
-const PERSONAL_DOMAINS = new Set([
-  "gmail.com", "yahoo.fr", "yahoo.com", "hotmail.com", "hotmail.fr",
-  "outlook.com", "outlook.fr", "live.fr", "live.com", "orange.fr",
-  "free.fr", "sfr.fr", "laposte.net", "wanadoo.fr", "icloud.com",
-  "me.com", "protonmail.com", "protonmail.ch", "gmx.fr", "gmx.com", "aol.com",
-]);
-
 function validateEmail(email: string): { ok: boolean; error?: string } {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return { ok: false, error: "Format email invalide" };
-  }
-  const domain = email.split("@")[1]?.toLowerCase() ?? "";
-  if (PERSONAL_DOMAINS.has(domain)) {
-    return { ok: false, error: "Email professionnel requis" };
   }
   return { ok: true };
 }
