@@ -316,9 +316,9 @@ function Ecran8({
         {/* Citation confiance */}
         <blockquote className="rounded-xl border border-[#F0EAE5] bg-white px-4 py-4">
           <p className="text-sm italic leading-relaxed text-[#686162]">
-            &laquo;&nbsp;Médéré est le seul organisme de formation fondé et dirigé par
-            un médecin, le Dr Harry Sitbon, qui ne vend que des formations conformes
-            aux référentiels officiels de certification périodique.&nbsp;&raquo;
+            &laquo;&nbsp;Médéré est le seul organisme de formation fondé et dirigé par un médecin, 
+            le docteur Harry Sitbon. Toutes les formations proposées sont validées par l’ANDPC et 
+            conformes aux référentiels de certification périodique.&nbsp;&raquo;
           </p>
         </blockquote>
 
