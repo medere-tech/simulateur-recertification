@@ -870,8 +870,8 @@ export function getReportHTML(data: ReportData): string {
 
     <p style="font-size:11px;font-style:italic;color:#554F4F;line-height:1.6;margin-bottom:24px;">
       Médéré est le seul organisme de formation fondé et dirigé par un médecin,
-      le Dr&nbsp;Harry Sitbon, qui ne propose que des formations conformes aux
-      référentiels officiels de certification périodique.
+      le Dr&nbsp;Harry Sitbon. Toutes les formations proposées sont validées par l’ANDPC et 
+      conformes aux référentiels de certification périodique.
     </p>
 
     <h3 style="font-size:14px;margin-bottom:16px;">Nos garanties réglementaires</h3>
