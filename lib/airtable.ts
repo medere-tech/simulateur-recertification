@@ -280,15 +280,15 @@ const PRIORITY_FORMATIONS: Record<string, Record<string, string[]>> = {
       'Dermoscopie en médecine générale',
       'Les troubles du sommeil : les spécificités diagnostiques en médecine générale',
       'Trouble du neurodéveloppement / TDAH : repérage, diagnostic et prise en charge chez l\'enfant après 7 ans, l\'adolescent et l\'adulte',
-      'Addiction aux substances illicites et chemsex : repérage, accompagnement et prise en charge',
       'L\'IA en santé pour les médecins',
+      'Santé mentale périnatale : repérage et prise en soin coordonnée',
     ],
     '2': [
       'Dermoscopie en médecine générale',
       'Les troubles du sommeil : les spécificités diagnostiques en médecine générale',
       'Trouble du neurodéveloppement / TDAH : repérage, diagnostic et prise en charge chez l\'enfant après 7 ans, l\'adolescent et l\'adulte',
-      'Addiction aux substances illicites et chemsex : repérage, accompagnement et prise en charge',
       'Dépistage d\'un trouble du spectre autistique au cours des examens obligatoires de l\'enfant',
+      'Santé mentale périnatale : repérage et prise en soin coordonnée',
     ],
     '3': [
       'Repérer et agir face aux violences faites aux enfants',
@@ -329,7 +329,6 @@ const PRIORITY_FORMATIONS: Record<string, Record<string, string[]>> = {
     '1': [
       'Stratégies diagnostiques et thérapeutiques dans la prise en charge des troubles bipolaires',
       'Refus scolaire anxieux : repérage et accompagnement',
-      'Addiction aux substances illicites et chemsex : repérage, accompagnement et prise en charge',
       'Trouble du neurodéveloppement / TDAH : repérage, diagnostic et prise en charge chez l\'enfant après 7 ans, l\'adolescent et l\'adulte',
       'L\'hypnose thérapeutique en psychiatrie',
       'L\'IA en santé pour les médecins',
@@ -337,7 +336,6 @@ const PRIORITY_FORMATIONS: Record<string, Record<string, string[]>> = {
     '2': [
       'Stratégies diagnostiques et thérapeutiques dans la prise en charge des troubles bipolaires',
       'Refus scolaire anxieux : repérage et accompagnement',
-      'Addiction aux substances illicites et chemsex : repérage, accompagnement et prise en charge',
       'Trouble du neurodéveloppement / TDAH : repérage, diagnostic et prise en charge chez l\'enfant après 7 ans, l\'adolescent et l\'adulte',
       'L\'hypnose thérapeutique en psychiatrie',
       'Repérer et agir face aux violences faites aux enfants',
@@ -411,7 +409,6 @@ const PRIORITY_FORMATIONS: Record<string, Record<string, string[]>> = {
       'Santé mentale périnatale : repérage et prise en soin coordonnée',
       'Repérer et agir face aux violences faites aux enfants',
       'Panorama de la vaccination pour les médecins généralistes, pédiatres et les sage-femmes : actualités et controverses',
-      'Maladie de Parkinson : prise en charge et parcours de soins',
     ],
     '3': [
       'Repérer et agir face aux violences faites aux enfants',
