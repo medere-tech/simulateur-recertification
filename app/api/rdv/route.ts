@@ -25,6 +25,23 @@ type RdvPayload = {
   urgency: string;
 };
 
+function formatDateFr(dateStr: string): string {
+  const date = new Date(dateStr + 'T00:00:00');
+  const jours = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+  const mois = ['janvier','février','mars','avril','mai','juin',
+    'juillet','août','septembre','octobre','novembre','décembre'];
+  return `${jours[date.getDay()]} ${date.getDate()} ${mois[date.getMonth()]} ${date.getFullYear()}`;
+}
+
+function formatNowFr(): string {
+  const now = new Date();
+  const mois = ['janvier','février','mars','avril','mai','juin',
+    'juillet','août','septembre','octobre','novembre','décembre'];
+  const h = now.getHours().toString().padStart(2, '0');
+  const m = now.getMinutes().toString().padStart(2, '0');
+  return `${now.getDate()} ${mois[now.getMonth()]} ${now.getFullYear()} à ${h}h${m}`;
+}
+
 async function updateHubSpotContact(payload: RdvPayload): Promise<void> {
   const hubspotKey = process.env.HUBSPOT_API_KEY;
   if (!hubspotKey) {
@@ -63,6 +80,18 @@ async function updateHubSpotContact(payload: RdvPayload): Promise<void> {
 
   const contactId = searchData.results[0].id;
 
+  const rdvText = [
+    '📅 RAPPEL DEMANDÉ',
+    `Jour : ${formatDateFr(payload.jourRappel)}`,
+    `Créneau : ${payload.heureRappel}`,
+    `Téléphone : ${payload.phone}`,
+    `Profession : ${payload.professionLabel}`,
+    `Score certification : ${payload.score}/8`,
+    payload.message ? `Message du PS : ${payload.message}` : null,
+    '—',
+    `Demande reçue le ${formatNowFr()}`,
+  ].filter(Boolean).join('\n');
+
   // 2. Mettre à jour les champs standards uniquement
   const patchRes = await fetch(
     `https://api.hubapi.com/crm/v3/objects/contacts/${contactId}`,
@@ -77,6 +106,7 @@ async function updateHubSpotContact(payload: RdvPayload): Promise<void> {
           firstname: payload.prenom,
           lastname:  payload.nom,
           phone:     payload.phone,
+          certification_rdv_demande: rdvText,
         },
       }),
     }
