@@ -11,13 +11,23 @@ export type HubSpotContact = {
 };
 
 // Mapping profession app → valeur HubSpot
-const PROFESSION_MAP: Record<string, HubSpotContact["certification_profession"]> = {
+export const PROFESSION_MAP: Record<string, HubSpotContact["certification_profession"]> = {
   MG:    "MG",
   CD:    "CD",
   GO:    "GO_GM",
   PED:   "PED",
   PSY:   "PSY",
   AUTRE: "Autre",
+};
+
+// Mapping valeur HubSpot certification_profession → libellé du dropdown standard "profession"
+export const CERTIFICATION_TO_PROFESSION: Record<string, string> = {
+  MG:    'Médecin',
+  CD:    'Chirurgien-dentiste',
+  GO_GM: 'Gynécologue',
+  PED:   'Pédiatre',
+  PSY:   'Psychiatre',
+  Autre: 'Autre',
 };
 
 function authHeaders() {
@@ -28,13 +38,16 @@ function authHeaders() {
 }
 
 function buildProperties(contact: HubSpotContact): Record<string, string> {
+  const hubspotProfession =
+    PROFESSION_MAP[contact.certification_profession] ?? contact.certification_profession;
   const props: Record<string, string> = {
     email:                    contact.email,
     firstname:                contact.firstname ?? "",
     phone:                    contact.phone ?? "",
-    certification_profession: PROFESSION_MAP[contact.certification_profession] ?? contact.certification_profession,
+    certification_profession: hubspotProfession,
     certification_source:     "simulateur_web",
     certification_pdf_sent:   "false",
+    profession:               CERTIFICATION_TO_PROFESSION[hubspotProfession] || 'Autre',
   };
   return props;
 }

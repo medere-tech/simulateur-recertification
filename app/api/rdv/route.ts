@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { sendSlackNotification } from "@/lib/slack";
 import { PROFESSIONS } from "@/lib/professions";
 import type { ProfessionId } from "@/lib/professions";
+import { PROFESSION_MAP, CERTIFICATION_TO_PROFESSION } from "@/lib/hubspot";
 
 export const runtime = "nodejs";
 
@@ -106,7 +107,11 @@ async function updateHubSpotContact(payload: RdvPayload): Promise<void> {
           firstname: payload.prenom,
           lastname:  payload.nom,
           phone:     payload.phone,
+          profession: CERTIFICATION_TO_PROFESSION[PROFESSION_MAP[payload.profession] ?? payload.profession] || 'Autre',
           certification_rdv_demande: rdvText,
+          certification_rdv_jour:    formatDateFr(payload.jourRappel),
+          certification_rdv_creneau: payload.heureRappel,
+          certification_rdv_message: payload.message || '',
         },
       }),
     }
