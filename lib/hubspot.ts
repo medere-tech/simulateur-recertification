@@ -47,7 +47,7 @@ function buildProperties(contact: HubSpotContact): Record<string, string> {
     certification_profession: hubspotProfession,
     certification_source:     "simulateur_web",
     certification_pdf_sent:   "false",
-    certification_simulateur_date: new Date().toISOString(),
+    certification_simulateur_date: new Date(new Date().toISOString().split('T')[0] + 'T00:00:00.000Z').getTime().toString(),
     profession:               CERTIFICATION_TO_PROFESSION[hubspotProfession] || 'Autre',
   };
   return props;
