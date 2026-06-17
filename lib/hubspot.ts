@@ -58,13 +58,14 @@ export type UpsertResult =
   | { success: false; error: string };
 
 export async function upsertContact(contact: HubSpotContact): Promise<UpsertResult> {
-  const properties = buildProperties(contact);
+  const allProperties = buildProperties(contact);
 
   // ── 1. Essai création ─────────────────────────────────────────────────────
+  // Création : on envoie toutes les propriétés telles quelles (y compris vides).
   const createRes = await fetch(HUBSPOT_API, {
     method:  "POST",
     headers: authHeaders(),
-    body:    JSON.stringify({ properties }),
+    body:    JSON.stringify({ properties: allProperties }),
   });
 
   if (createRes.ok) {
@@ -74,13 +75,26 @@ export async function upsertContact(contact: HubSpotContact): Promise<UpsertResu
 
   // ── 2. Conflit (409) → mise à jour par email ──────────────────────────────
   if (createRes.status === 409) {
+    // Mise à jour : ne garder que les propriétés non vides pour ne pas écraser
+    // les valeurs existantes (ex. phone déjà renseigné dans HubSpot).
+    const updateProperties: Record<string, string> = {};
+    for (const [key, value] of Object.entries(allProperties)) {
+      if (value !== undefined && value !== null && value !== '') {
+        updateProperties[key] = value;
+      }
+    }
+
+    // Toujours mettre à jour ces propriétés spécifiques au simulateur.
+    updateProperties.certification_source = 'simulateur_web';
+    updateProperties.certification_simulateur_date = allProperties.certification_simulateur_date;
+
     const encodedEmail = encodeURIComponent(contact.email);
     const patchRes = await fetch(
       `${HUBSPOT_API}/${encodedEmail}?idProperty=email`,
       {
         method:  "PATCH",
         headers: authHeaders(),
-        body:    JSON.stringify({ properties }),
+        body:    JSON.stringify({ properties: updateProperties }),
       }
     );
 
