@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { sendSlackNotification } from "@/lib/slack";
 import { PROFESSIONS } from "@/lib/professions";
 import type { ProfessionId } from "@/lib/professions";
-import { PROFESSION_MAP, CERTIFICATION_TO_PROFESSION } from "@/lib/hubspot";
+import { PROFESSION_MAP, CERTIFICATION_TO_PROFESSION, createContactNote } from "@/lib/hubspot";
 
 export const runtime = "nodejs";
 
@@ -89,7 +89,7 @@ async function updateHubSpotContact(payload: RdvPayload): Promise<void> {
     `Profession : ${payload.professionLabel}`,
     `Score certification : ${payload.score}/8`,
     payload.message ? `Message du PS : ${payload.message}` : null,
-    '—',
+    '-',
     `Demande reçue le ${formatNowFr()}`,
   ].filter(Boolean).join('\n');
 
@@ -123,6 +123,26 @@ async function updateHubSpotContact(payload: RdvPayload): Promise<void> {
     const errBody = await patchRes.text();
     console.error('[HUBSPOT] PATCH failed:', patchRes.status, errBody);
   }
+
+  // 3. Note sur la fiche contact (timeline commerciaux).
+  // createContactNote avale ses propres erreurs ; awaité ici pour rester
+  // dans la fenêtre 5s du Promise.race et survivre au serverless Vercel.
+  const noteBody = `
+<h3>📅 Demande de rappel</h3>
+<p>
+<strong>Nom :</strong> ${payload.prenom} ${payload.nom}<br>
+<strong>Téléphone :</strong> ${payload.phone}<br>
+<strong>Profession :</strong> ${payload.professionLabel}
+</p>
+<p>
+<strong>Jour souhaité :</strong> ${formatDateFr(payload.jourRappel)}<br>
+<strong>Créneau :</strong> ${payload.heureRappel}
+</p>
+${payload.message ? `<p><strong>Message :</strong> ${payload.message}</p>` : ''}
+<p><em>Demande reçue le ${new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })} à ${new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</em></p>
+`.trim();
+
+  await createContactNote(contactId, noteBody);
 }
 
 export async function POST(req: NextRequest) {

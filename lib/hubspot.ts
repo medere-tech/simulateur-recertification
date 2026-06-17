@@ -110,3 +110,59 @@ export async function upsertContact(contact: HubSpotContact): Promise<UpsertResu
   const errBody = await createRes.text();
   return { success: false, error: `HubSpot POST ${createRes.status}: ${errBody}` };
 }
+
+// ─── Note (engagement) sur la fiche contact ──────────────────────────────────
+// Crée une note dans la timeline du contact (visible par les commerciaux).
+// Fire-and-forget : ne lève jamais, ne bloque jamais le flux principal.
+export async function createContactNote(
+  contactId: string,
+  noteBody: string
+): Promise<void> {
+  const apiKey = process.env.HUBSPOT_API_KEY;
+  if (!apiKey) return;
+
+  try {
+    // 1. Créer la note (engagement)
+    const noteResponse = await fetch(
+      'https://api.hubapi.com/crm/v3/objects/notes',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          properties: {
+            hs_timestamp: new Date().toISOString(),
+            hs_note_body: noteBody,
+          },
+        }),
+      }
+    );
+
+    if (!noteResponse.ok) {
+      console.error('[HUBSPOT] Note creation failed:', noteResponse.status);
+      return;
+    }
+
+    const noteData = await noteResponse.json();
+    const noteId = noteData.id;
+
+    // 2. Associer la note au contact (type 202 = note → contact en API v3)
+    await fetch(
+      `https://api.hubapi.com/crm/v3/objects/notes/${noteId}/associations/contacts/${contactId}/202`,
+      {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    console.log('[HUBSPOT] Note created and associated:', noteId);
+  } catch (err) {
+    console.error('[HUBSPOT] Note error:', err);
+    // Ne bloque jamais le flux principal
+  }
+}

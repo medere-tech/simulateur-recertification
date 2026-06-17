@@ -10,6 +10,7 @@ import { PROFESSIONS } from "@/lib/professions";
 import type { ProfessionId } from "@/lib/professions";
 import type { DiplomaYear, DimensionStatus, Urgency } from "@/lib/scoring";
 import { sendSlackNotification } from "@/lib/slack";
+import { upsertContact, createContactNote, HubSpotContact } from "@/lib/hubspot";
 
 export const runtime = "nodejs";
 
@@ -37,6 +38,26 @@ const VALID_DIPLOMA_YEARS: DiplomaYear[] = [
 ];
 const VALID_STATUSES: DimensionStatus[] = ["valide", "en_cours", "a_faire"];
 const VALID_URGENCIES: Urgency[] = ["rouge", "orange", "vert"];
+
+// ─── Libellés pour la note HubSpot ────────────────────────────────────────────
+const STATUS_LABEL: Record<string, string> = {
+  valide:   '✅ Validé (2/2)',
+  en_cours: '⚠️ En cours (1/2)',
+  a_faire:  '❌ À faire (0/2)',
+};
+
+const URGENCY_LABEL: Record<string, string> = {
+  rouge:  '🔴 Situation critique',
+  orange: '🟠 En cours',
+  vert:   '🟢 Bien avancé',
+};
+
+const DIPLOMA_LABEL: Record<string, string> = {
+  avant_2000: 'Avant 2000',
+  '2000_2010': '2000–2010',
+  '2011_2022': '2011–2022',
+  apres_2023: 'Après 2023',
+};
 
 function validate(body: Partial<ReportRequestBody>): body is ReportRequestBody {
   return (
@@ -120,7 +141,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Fire-and-forget Slack — ne bloque pas la réponse
+    // Fire-and-forget Slack - ne bloque pas la réponse
     if (body.sendEmail && body.email) {
       const professionLabel = PROFESSIONS[body.profession]?.label ?? body.profession;
       sendSlackNotification({
@@ -132,6 +153,64 @@ export async function POST(req: NextRequest) {
         score: body.score,
         urgency: body.urgency,
       }).catch(err => console.error('[SLACK] Fire-and-forget error:', err));
+    }
+
+    // ── Note HubSpot (timeline commerciaux) - fire-and-forget ──────────────────
+    // Construit le résumé du diagnostic et l'ajoute en note sur la fiche contact.
+    // Ne bloque JAMAIS la réponse HTTP ni l'envoi du PDF.
+    if (CONFIG.HUBSPOT_ENABLED && body.email) {
+      const professionLabel = PROFESSIONS[body.profession]?.label ?? body.profession;
+
+      // Échéance (cf. lib/scoring.ts getEcheance) :
+      // MG/CD diplômés avant 2023 → cycle 9 ans → 2032, sinon 2028.
+      const deadlineYear =
+        (body.profession === "MG" || body.profession === "CD") && body.diplomaYear !== "apres_2023"
+          ? 2032
+          : 2028;
+
+      const formationsHtml =
+        formations
+          .flatMap((bloc) => bloc.formations.map((f) => `• ${f.titre} (${f.format})`))
+          .join("<br>") || "Aucune (tous les blocs sont validés)";
+
+      const noteBody = `
+<h3>📊 Diagnostic certification périodique</h3>
+<p>
+<strong>Profession :</strong> ${professionLabel}<br>
+<strong>Score :</strong> ${body.score}/8 - ${URGENCY_LABEL[body.urgency] ?? body.urgency}<br>
+<strong>Année de diplôme :</strong> ${DIPLOMA_LABEL[body.diplomaYear] ?? body.diplomaYear} → Échéance ${deadlineYear}
+</p>
+<p>
+<strong>Bloc 1 - Connaissances :</strong> ${STATUS_LABEL[body.bloc1Status] ?? body.bloc1Status}<br>
+<strong>Bloc 2 - Qualité des pratiques :</strong> ${STATUS_LABEL[body.bloc2Status] ?? body.bloc2Status}<br>
+<strong>Bloc 3 - Relation patient :</strong> ${STATUS_LABEL[body.bloc3Status] ?? body.bloc3Status}<br>
+<strong>Bloc 4 - Santé personnelle :</strong> ${STATUS_LABEL[body.bloc4Status] ?? body.bloc4Status}
+</p>
+<p>
+<strong>Formations recommandées dans le rapport :</strong><br>
+${formationsHtml}
+</p>
+<p><em>Rapport PDF envoyé le ${new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}</em></p>
+`.trim();
+
+      // Upsert (idempotent) pour récupérer le contactId, puis note - sans bloquer.
+      void (async () => {
+        try {
+          const contact: HubSpotContact = {
+            email:                    body.email,
+            phone:                    body.phone || undefined,
+            certification_profession: body.profession as HubSpotContact["certification_profession"],
+          };
+          const result = await upsertContact(contact);
+          if (result.success && result.contactId) {
+            await createContactNote(result.contactId, noteBody);
+          } else if (!result.success) {
+            console.error("[NOTE] upsert error:", result.error);
+          }
+        } catch (err) {
+          console.error("[NOTE] Error:", err);
+        }
+      })();
     }
 
     return NextResponse.json({ success: true, pdf, filename, pdfSent });
