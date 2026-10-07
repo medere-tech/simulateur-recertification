@@ -37,6 +37,7 @@ type Contact = {
   rdvJour: string;
   rdvCreneau: string;
   rdvMessage: string;
+  lastFlunterCall: string;
   isInscrit: boolean;
   inscriptions: Inscription[];
 };
@@ -162,6 +163,48 @@ function formatDateLong(iso: string): string {
   if (isNaN(t)) return iso;
   const d = new Date(t);
   return `${d.getDate()} ${MOIS_LONG[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+// ─── Suivi des rappels Flunter ──────────────────────────────────────────────────
+
+type CallStatus = "called" | "waiting" | "missed";
+
+// Clé jour locale "YYYY-MM-DD" (comparable lexicographiquement, sans décalage UTC)
+function dayKey(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+// rdvJour est stocké en texte français par /api/rdv : « Mercredi 8 octobre 2026 »
+function parseRdvJour(jour: string): Date | null {
+  const m = jour.match(/(\d{1,2})\s+([A-Za-zÀ-ÿ]+)\s+(\d{4})/);
+  if (m) {
+    const month = MOIS_LONG.indexOf(m[2].toLowerCase());
+    if (month !== -1) return new Date(Number(m[3]), month, Number(m[1]));
+  }
+  const t = Date.parse(jour);
+  return isNaN(t) ? null : new Date(t);
+}
+
+// last_flunter_call_timestamp : ISO ou timestamp ms selon l'API HubSpot
+function parseFlunterCall(raw: string): Date | null {
+  if (!raw) return null;
+  const t = /^\d+$/.test(raw) ? Number(raw) : Date.parse(raw);
+  return isNaN(t) ? null : new Date(t);
+}
+
+// Rappelé si un appel Flunter a eu lieu le jour du RDV demandé ou après.
+// Sinon : en attente tant que le jour n'est pas arrivé, non rappelé ensuite.
+function getCallStatus(c: Contact): { status: CallStatus; flunterDate: Date | null; rdvDate: Date | null } {
+  const rdvDate = parseRdvJour(c.rdvJour);
+  const flunterDate = parseFlunterCall(c.lastFlunterCall);
+  const rdvDay = rdvDate ? dayKey(rdvDate) : null;
+  const todayDay = dayKey(new Date());
+
+  let status: CallStatus;
+  if (flunterDate && (!rdvDay || dayKey(flunterDate) >= rdvDay)) status = "called";
+  else if (rdvDay && todayDay < rdvDay) status = "waiting";
+  else status = "missed";
+  return { status, flunterDate, rdvDate };
 }
 
 function professionColor(code: string): string {
@@ -424,6 +467,10 @@ function DashboardView({
     () => (inscritReady ? contacts.filter((c) => c.isInscrit).length : null),
     [inscritReady, contacts]
   );
+  const calledCount = useMemo(
+    () => contacts.filter((c) => c.hasRdv && getCallStatus(c).status === "called").length,
+    [contacts]
+  );
   const conversionInscrit =
     inscritReady && baseStats && baseStats.total > 0
       ? Math.round(((inscritCount ?? 0) / baseStats.total) * 1000) / 10
@@ -484,7 +531,7 @@ function DashboardView({
           <KpiCard label="Total leads" value={baseStats?.total} sub={baseStats ? `+${baseStats.last30Days} ces 30 derniers jours` : ""} loading={loadingContacts && !baseStats} />
           <KpiCard label="Demandes de RDV" value={baseStats?.rdvCount} sub={baseStats ? `${baseStats.conversionRdv}% lead → RDV` : ""} loading={loadingContacts && !baseStats} />
           <KpiCard label="Inscriptions" value={inscritCount ?? undefined} sub={conversionInscrit !== null ? `${conversionInscrit}% lead → inscription` : ""} loading={!inscritReady} />
-          <KpiCard label="Leads avec téléphone" value={baseStats?.withPhone} sub={baseStats ? `${baseStats.phonePct}% renseigné` : ""} loading={loadingContacts && !baseStats} />
+          <KpiCard label="Rappels effectués" value={baseStats ? `${calledCount}/${baseStats.rdvCount}` : undefined} sub={baseStats ? "RDV rappelés via Flunter" : ""} loading={loadingContacts && !baseStats} />
         </section>
 
         {/* ── Onglets (flat soulignés, style Settings) ── */}
@@ -535,7 +582,7 @@ function Skel({ className = "", style }: { className?: string; style?: React.CSS
 
 // ─── KPI card ─────────────────────────────────────────────────────────────────
 
-function KpiCard({ label, value, sub, loading }: { label: string; value: number | undefined; sub: string; loading: boolean }) {
+function KpiCard({ label, value, sub, loading }: { label: string; value: number | string | undefined; sub: string; loading: boolean }) {
   return (
     <div className={`${CARD} p-5`}>
       {loading ? (
@@ -576,6 +623,31 @@ function StatusBadge({ active, on, off }: { active: boolean; on: string; off: st
       style={active ? { backgroundColor: `${C.success}26`, color: C.success } : { backgroundColor: `${C.muted}26`, color: C.muted }}
     >
       {active ? on : off}
+    </span>
+  );
+}
+
+const CALL_BADGE: Record<CallStatus, string> = {
+  called: "#2DA131",
+  waiting: "#006E90",
+  missed: "#DC2626",
+};
+
+function CallStatusBadge({ contact }: { contact: Contact }) {
+  const { status, flunterDate, rdvDate } = getCallStatus(contact);
+  const label =
+    status === "called"
+      ? `✅ Rappelé le ${flunterDate ? formatDate(flunterDate.toISOString()) : "—"}`
+      : status === "waiting"
+        ? `⏳ Rappel prévu le ${rdvDate ? formatDate(rdvDate.toISOString()) : contact.rdvJour}`
+        : "❌ Non rappelé";
+  const color = CALL_BADGE[status];
+  return (
+    <span
+      className="inline-block font-semibold"
+      style={{ fontSize: 12, padding: "3px 10px", borderRadius: 20, color, backgroundColor: `${color}12` }}
+    >
+      {label}
     </span>
   );
 }
@@ -936,6 +1008,7 @@ function RdvTab({ contacts, loading }: { contacts: Contact[]; loading: boolean }
               <Row label="Jour souhaité" value={c.rdvJour || "—"} />
               <Row label="Créneau" value={c.rdvCreneau || "—"} />
             </dl>
+            <div className="mt-3"><CallStatusBadge contact={c} /></div>
             {c.rdvMessage && (
               <div className="mt-3 rounded-lg p-3 text-sm" style={{ background: C.pageBg, color: C.text }}>
                 <span className="font-semibold" style={{ color: C.muted }}>Message du PS : </span>

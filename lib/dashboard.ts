@@ -48,6 +48,7 @@ export type DashboardContact = {
   rdvJour: string;
   rdvCreneau: string;
   rdvMessage: string;
+  lastFlunterCall: string;   // last_flunter_call_timestamp (HubSpot) - dernier appel Flunter, "" si aucun
   isInscrit: boolean;
   inscriptions: Inscription[];
 };
@@ -111,6 +112,7 @@ const HUBSPOT_PROPERTIES = [
   "certification_rdv_message",
   "certification_simulateur_date",
   "createdate",
+  "last_flunter_call_timestamp",
 ];
 
 // ─── Date de référence du simulateur ───────────────────────────────────────────
@@ -224,6 +226,7 @@ export async function fetchAllHubSpotContacts(): Promise<DashboardContact[]> {
         rdvJour: p.certification_rdv_jour ?? "",
         rdvCreneau: p.certification_rdv_creneau ?? "",
         rdvMessage: p.certification_rdv_message ?? "",
+        lastFlunterCall: p.last_flunter_call_timestamp ?? "",
         isInscrit: false,
         inscriptions: [],
       });

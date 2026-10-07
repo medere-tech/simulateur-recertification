@@ -63,7 +63,7 @@ export type Formation = {
   format:         "E-Learning" | "Classe virtuelle" | "Présentiel" | "Hybride" | string;
   url:            string;
   indemnisation:  number | null;
-  blocAxe:        string[] | null; // ["1"] | ["1", "2"] | etc.
+  blocAxe:        string[] | null; // ["1"] | ["1", "2"] | etc. (normalisé depuis "Bloc 1", "Bloc 2"…)
   professions:    string[];      // IDs app : ["MG", "PED"]
 };
 
@@ -140,7 +140,8 @@ function parseRecord(record: AirtableRecord): Formation {
     .map((label) => AIRTABLE_PROFESSION_REVERSE[label] ?? null)
     .filter((id): id is string => id !== null);
 
-  // Bloc/Axe : multipleSelects → chiffres ["1", "2"]
+  // Bloc/Axe : multipleSelects "Bloc 1", "Bloc 2"… → chiffres ["1", "2"]
+  // (les anciennes options "1", "2"… donnent le même résultat)
   const blocAxeRaw = field("blocAxe");
   let blocAxe: string[] | null = null;
   if (Array.isArray(blocAxeRaw) && blocAxeRaw.length > 0) {
