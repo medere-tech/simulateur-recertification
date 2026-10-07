@@ -38,6 +38,7 @@ type Contact = {
   rdvCreneau: string;
   rdvMessage: string;
   lastFlunterCall: string;
+  ownerName: string | null;
   isInscrit: boolean;
   inscriptions: Inscription[];
 };
@@ -874,7 +875,7 @@ function Funnel({ stats, inscritCount, conversionInscrit }: { stats: Stats; insc
 //  Onglet 2 — Derniers leads
 // ═══════════════════════════════════════════════════════════════════════════════
 
-type SortKey = "name" | "email" | "professionLabel" | "phone" | "simulateurDate" | "hasRdv" | "isInscrit";
+type SortKey = "name" | "email" | "professionLabel" | "phone" | "ownerName" | "simulateurDate" | "hasRdv" | "isInscrit";
 
 function LeadsTab({ contacts, loading }: { contacts: Contact[]; loading: boolean }) {
   const [sortKey, setSortKey] = useState<SortKey>("simulateurDate");
@@ -886,7 +887,7 @@ function LeadsTab({ contacts, loading }: { contacts: Contact[]; loading: boolean
       let cmp = 0;
       if (sortKey === "simulateurDate") cmp = (Date.parse(a.simulateurDate) || 0) - (Date.parse(b.simulateurDate) || 0);
       else if (sortKey === "hasRdv" || sortKey === "isInscrit") cmp = Number(a[sortKey]) - Number(b[sortKey]);
-      else cmp = String(a[sortKey]).localeCompare(String(b[sortKey]), "fr");
+      else cmp = String(a[sortKey] ?? "").localeCompare(String(b[sortKey] ?? ""), "fr");
       return sortDir === "asc" ? cmp : -cmp;
     });
     return arr;
@@ -912,6 +913,7 @@ function LeadsTab({ contacts, loading }: { contacts: Contact[]; loading: boolean
     { key: "email", label: "Email" },
     { key: "professionLabel", label: "Spécialité" },
     { key: "phone", label: "Téléphone" },
+    { key: "ownerName", label: "Commercial" },
     { key: "simulateurDate", label: "Simulateur" },
     { key: "hasRdv", label: "RDV" },
     { key: "isInscrit", label: "Inscription" },
@@ -921,7 +923,7 @@ function LeadsTab({ contacts, loading }: { contacts: Contact[]; loading: boolean
     <div>
       <div className={`${CARD} overflow-hidden`}>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[760px] border-collapse text-sm">
+          <table className="w-full min-w-[880px] border-collapse text-sm">
             <thead>
               <tr style={{ background: C.hover }}>
                 {cols.map((c) => (
@@ -941,6 +943,7 @@ function LeadsTab({ contacts, loading }: { contacts: Contact[]; loading: boolean
                   <td className="px-3 py-3" style={{ color: C.textSecondary }}>{c.email}</td>
                   <td className="px-3 py-3"><ProfessionBadge code={c.profession} label={c.professionLabel} /></td>
                   <td className="px-3 py-3" style={{ color: C.textSecondary }}>{c.phone || "—"}</td>
+                  <td className="px-3 py-3 whitespace-nowrap" style={{ color: c.ownerName ? C.text : C.muted }}>{c.ownerName || "—"}</td>
                   <td className="px-3 py-3 whitespace-nowrap" style={{ color: C.muted }}>{formatDate(c.simulateurDate)}</td>
                   <td className="px-3 py-3"><StatusBadge active={c.hasRdv} on="RDV" off="—" /></td>
                   <td className="px-3 py-3"><StatusBadge active={c.isInscrit} on="Inscrit" off="—" /></td>
@@ -997,6 +1000,7 @@ function RdvTab({ contacts, loading }: { contacts: Contact[]; loading: boolean }
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h3 className="font-bold" style={{ color: C.text }}>{c.name}</h3>
+                <OwnerLine name={c.ownerName} />
                 <ProfessionBadge code={c.profession} label={c.professionLabel} />
               </div>
               <span className="rounded-full px-3 py-1 text-xs font-semibold" style={{ background: "#D87DA926", color: "#B05683" }}>RDV demandé</span>
@@ -1048,6 +1052,7 @@ function InscriptionsTab({ contacts, loading }: { contacts: Contact[]; loading: 
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h3 className="font-bold" style={{ color: C.text }}>{c.name}</h3>
+                {c.ownerName && <OwnerLine name={c.ownerName} />}
                 <ProfessionBadge code={c.profession} label={c.professionLabel} />
               </div>
               <span className="rounded-full px-3 py-1 text-xs font-semibold" style={{ background: `${C.success}26`, color: C.success }}>✓ Converti</span>
@@ -1085,6 +1090,15 @@ function InscriptionsTab({ contacts, loading }: { contacts: Contact[]; loading: 
 }
 
 // ─── Composants partagés ────────────────────────────────────────────────────────
+
+// Commercial HubSpot attribué (sous le nom du contact)
+function OwnerLine({ name }: { name: string | null }) {
+  return (
+    <p className="mb-1.5 mt-0.5 text-[13px]" style={{ color: name ? C.text : C.muted }}>
+      {name ? `Commercial : ${name}` : "Non attribué"}
+    </p>
+  );
+}
 
 function Row({ label, value }: { label: string; value: string }) {
   return (

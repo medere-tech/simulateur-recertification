@@ -49,6 +49,7 @@ export type DashboardContact = {
   rdvCreneau: string;
   rdvMessage: string;
   lastFlunterCall: string;   // last_flunter_call_timestamp (HubSpot) - dernier appel Flunter, "" si aucun
+  ownerName: string | null;  // commercial attribué (hubspot_owner_id résolu via l'API Owners), null si aucun
   isInscrit: boolean;
   inscriptions: Inscription[];
 };
@@ -113,6 +114,7 @@ const HUBSPOT_PROPERTIES = [
   "certification_simulateur_date",
   "createdate",
   "last_flunter_call_timestamp",
+  "hubspot_owner_id",
 ];
 
 // ─── Date de référence du simulateur ───────────────────────────────────────────
@@ -157,12 +159,46 @@ function getSimulateurDate(p: {
   return SIMULATEUR_LAUNCH;
 }
 
+// Résout les owners HubSpot (commerciaux) : ownerId → "Prénom Nom".
+// Map vide en cas d'erreur (ex : scope crm.objects.owners.read manquant).
+async function fetchOwnerNames(): Promise<Map<string, string>> {
+  const apiKey = process.env.HUBSPOT_API_KEY;
+  if (!apiKey) return new Map();
+
+  try {
+    const response = await fetch("https://api.hubapi.com/crm/v3/owners?limit=500", {
+      headers: { Authorization: `Bearer ${apiKey}` },
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      console.error("[dashboard] HubSpot owners error:", response.status, await response.text());
+      return new Map();
+    }
+    const data = (await response.json()) as {
+      results?: { id: string | number; firstName?: string; lastName?: string; email?: string }[];
+    };
+    const map = new Map<string, string>();
+    for (const owner of data.results ?? []) {
+      const name = [owner.firstName, owner.lastName].filter(Boolean).join(" ").trim();
+      map.set(String(owner.id), name || owner.email || "Inconnu");
+    }
+    return map;
+  } catch (err) {
+    console.error("[dashboard] HubSpot owners fetch failed:", err);
+    return new Map();
+  }
+}
+
 export async function fetchAllHubSpotContacts(): Promise<DashboardContact[]> {
   const key = process.env.HUBSPOT_API_KEY;
   if (!key) {
     console.warn("[dashboard] HUBSPOT_API_KEY non configurée");
     return [];
   }
+
+  // Owners lancés en parallèle de la pagination des contacts (aucune latence ajoutée)
+  const ownersPromise = fetchOwnerNames();
+  const ownerIds = new Map<string, string>(); // contact id → hubspot_owner_id
 
   const contacts: DashboardContact[] = [];
   let after: string | undefined;
@@ -227,13 +263,21 @@ export async function fetchAllHubSpotContacts(): Promise<DashboardContact[]> {
         rdvCreneau: p.certification_rdv_creneau ?? "",
         rdvMessage: p.certification_rdv_message ?? "",
         lastFlunterCall: p.last_flunter_call_timestamp ?? "",
+        ownerName: null,
         isInscrit: false,
         inscriptions: [],
       });
+      if (p.hubspot_owner_id) ownerIds.set(r.id, p.hubspot_owner_id);
     }
 
     after = data.paging?.next?.after;
   } while (after);
+
+  const ownerMap = await ownersPromise;
+  for (const c of contacts) {
+    const ownerId = ownerIds.get(c.id);
+    c.ownerName = (ownerId && ownerMap.get(ownerId)) || null;
+  }
 
   return contacts;
 }
