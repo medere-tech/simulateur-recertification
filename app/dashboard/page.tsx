@@ -23,6 +23,7 @@ import {
 
 // ─── Types (miroir de lib/dashboard.ts) ─────────────────────────────────────────
 
+type CallSource = "flunter" | "aircall" | null;
 type Inscription = { formation: string; date: string; specialite: string; numeroDPC: string };
 type Contact = {
   id: string;
@@ -37,7 +38,9 @@ type Contact = {
   rdvJour: string;
   rdvCreneau: string;
   rdvMessage: string;
-  lastFlunterCall: string;
+  rdvRequestDate: string;
+  lastCallDate: string;
+  callSource: CallSource;
   ownerName: string | null;
   isInscrit: boolean;
   inscriptions: Inscription[];
@@ -166,7 +169,21 @@ function formatDateLong(iso: string): string {
   return `${d.getDate()} ${MOIS_LONG[d.getMonth()]} ${d.getFullYear()}`;
 }
 
-// ─── Suivi des rappels Flunter ──────────────────────────────────────────────────
+// Date de soumission de la demande de RDV : « 20 avril 2026 à 11h32 » (heure locale).
+// Ancien format sans heure (T00:00:00.000Z) → date seule, lue en UTC pour ne pas décaler le jour.
+function formatRdvRequestDate(iso: string): string {
+  const t = Date.parse(iso);
+  if (isNaN(t)) return "";
+  const d = new Date(t);
+  if (iso.endsWith("T00:00:00.000Z")) {
+    return `${d.getUTCDate()} ${MOIS_LONG[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+  }
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  return `${d.getDate()} ${MOIS_LONG[d.getMonth()]} ${d.getFullYear()} à ${hh}h${mm}`;
+}
+
+// ─── Suivi des rappels (Flunter + Aircall) ─────────────────────────────────────
 
 type CallStatus = "called" | "waiting" | "missed";
 
@@ -186,26 +203,37 @@ function parseRdvJour(jour: string): Date | null {
   return isNaN(t) ? null : new Date(t);
 }
 
-// last_flunter_call_timestamp : ISO ou timestamp ms selon l'API HubSpot
-function parseFlunterCall(raw: string): Date | null {
-  if (!raw) return null;
-  const t = /^\d+$/.test(raw) ? Number(raw) : Date.parse(raw);
+// lastCallDate : ISO déjà résolu côté serveur (appel le plus récent Flunter/Aircall)
+function parseCallDate(iso: string): Date | null {
+  if (!iso) return null;
+  const t = Date.parse(iso);
   return isNaN(t) ? null : new Date(t);
 }
 
-// Rappelé si un appel Flunter a eu lieu le jour du RDV demandé ou après.
-// Sinon : en attente tant que le jour n'est pas arrivé, non rappelé ensuite.
-function getCallStatus(c: Contact): { status: CallStatus; flunterDate: Date | null; rdvDate: Date | null } {
+const CALL_SOURCE_LABEL: Record<"flunter" | "aircall", string> = { flunter: "Flunter", aircall: "Aircall" };
+
+// Rappelé UNIQUEMENT si l'appel (Flunter ou Aircall) a lieu après la soumission de la
+// demande de RDV (à la minute près) — un appel antérieur est sans rapport et ignoré.
+// Un rappel avant le jour souhaité (rdvJour) compte : le commercial a rappelé plus tôt.
+function isCalledAfterRdvRequest(c: Contact): boolean {
+  const callDate = parseCallDate(c.lastCallDate);
+  const requestDate = parseCallDate(c.rdvRequestDate);
+  if (!c.hasRdv || !callDate || !requestDate) return false;
+  return callDate >= requestDate;
+}
+
+// Sinon : en attente tant que le jour souhaité n'est pas arrivé, non rappelé ensuite.
+function getCallStatus(c: Contact): { status: CallStatus; callDate: Date | null; rdvDate: Date | null } {
   const rdvDate = parseRdvJour(c.rdvJour);
-  const flunterDate = parseFlunterCall(c.lastFlunterCall);
+  const callDate = parseCallDate(c.lastCallDate);
   const rdvDay = rdvDate ? dayKey(rdvDate) : null;
   const todayDay = dayKey(new Date());
 
   let status: CallStatus;
-  if (flunterDate && (!rdvDay || dayKey(flunterDate) >= rdvDay)) status = "called";
+  if (isCalledAfterRdvRequest(c)) status = "called";
   else if (rdvDay && todayDay < rdvDay) status = "waiting";
   else status = "missed";
-  return { status, flunterDate, rdvDate };
+  return { status, callDate, rdvDate };
 }
 
 function professionColor(code: string): string {
@@ -238,6 +266,7 @@ const GLOBAL_CSS = `
 body > footer { display: none !important; }
 .dash-tabs { -webkit-overflow-scrolling: touch; scrollbar-width: none; -ms-overflow-style: none; }
 .dash-tabs::-webkit-scrollbar { display: none; }
+.dash-scroll-x { width: 100%; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 `;
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -532,7 +561,7 @@ function DashboardView({
           <KpiCard label="Total leads" value={baseStats?.total} sub={baseStats ? `+${baseStats.last30Days} ces 30 derniers jours` : ""} loading={loadingContacts && !baseStats} />
           <KpiCard label="Demandes de RDV" value={baseStats?.rdvCount} sub={baseStats ? `${baseStats.conversionRdv}% lead → RDV` : ""} loading={loadingContacts && !baseStats} />
           <KpiCard label="Inscriptions" value={inscritCount ?? undefined} sub={conversionInscrit !== null ? `${conversionInscrit}% lead → inscription` : ""} loading={!inscritReady} />
-          <KpiCard label="Rappels effectués" value={baseStats ? `${calledCount}/${baseStats.rdvCount}` : undefined} sub={baseStats ? "RDV rappelés via Flunter" : ""} loading={loadingContacts && !baseStats} />
+          <KpiCard label="Rappels effectués" value={baseStats ? `${calledCount}/${baseStats.rdvCount}` : undefined} sub={baseStats ? "RDV rappelés via Flunter / Aircall" : ""} loading={loadingContacts && !baseStats} />
         </section>
 
         {/* ── Onglets (flat soulignés, style Settings) ── */}
@@ -564,7 +593,7 @@ function DashboardView({
 
         <div className="mt-6">
           {tab === "overview" && (
-            <OverviewTab contacts={contacts} stats={baseStats} loading={loadingContacts && !baseStats} inscritCount={inscritCount} conversionInscrit={conversionInscrit} />
+            <OverviewTab contacts={contacts} stats={baseStats} loading={loadingContacts && !baseStats} inscritCount={inscritCount} conversionInscrit={conversionInscrit} inscritReady={inscritReady} />
           )}
           {tab === "leads" && <LeadsTab contacts={contacts} loading={loadingContacts && !contactsData} />}
           {tab === "rdv" && <RdvTab contacts={contacts} loading={loadingContacts && !contactsData} />}
@@ -635,10 +664,11 @@ const CALL_BADGE: Record<CallStatus, string> = {
 };
 
 function CallStatusBadge({ contact }: { contact: Contact }) {
-  const { status, flunterDate, rdvDate } = getCallStatus(contact);
+  const { status, callDate, rdvDate } = getCallStatus(contact);
+  const via = contact.callSource ? ` via ${CALL_SOURCE_LABEL[contact.callSource]}` : "";
   const label =
     status === "called"
-      ? `✅ Rappelé le ${flunterDate ? formatDate(flunterDate.toISOString()) : "—"}`
+      ? `✅ Rappelé le ${callDate ? formatDate(callDate.toISOString()) : "—"}${via}`
       : status === "waiting"
         ? `⏳ Rappel prévu le ${rdvDate ? formatDate(rdvDate.toISOString()) : contact.rdvJour}`
         : "❌ Non rappelé";
@@ -755,12 +785,14 @@ function OverviewTab({
   loading,
   inscritCount,
   conversionInscrit,
+  inscritReady,
 }: {
   contacts: Contact[];
   stats: Stats | null;
   loading: boolean;
   inscritCount: number | null;
   conversionInscrit: number | null;
+  inscritReady: boolean;
 }) {
   // Leads par mois basés sur simulateurDate, uniquement à partir du lancement (2026-05)
   const monthData = useMemo(() => monthlyFromSimulateur(contacts), [contacts]);
@@ -838,6 +870,154 @@ function OverviewTab({
         <h2 className="mb-4 font-bold" style={{ color: C.text }}>Tunnel de conversion</h2>
         <Funnel stats={stats} inscritCount={inscritCount} conversionInscrit={conversionInscrit} />
       </div>
+
+      {/* Performance par commercial */}
+      <div className="min-w-0 lg:col-span-2">
+        <SalesPerformance contacts={contacts} inscritReady={inscritReady} />
+      </div>
+    </div>
+  );
+}
+
+// ─── Performance commerciale ───────────────────────────────────────────────────
+
+type OwnerPerf = {
+  name: string;
+  leads: number;
+  rdv: number;            // leads avec demande de RDV (base du taux de rappel)
+  called: number;
+  inscrits: number;
+  callRate: number;       // % rappelés / demandes de RDV
+  conversionRate: number; // %
+};
+
+// Owners HubSpot internes (non commerciaux) exclus de la performance commerciale.
+// Leurs leads restent comptés dans les autres vues. Comparaison insensible à la casse.
+const EXCLUDED_OWNERS = ["maylis bréart de boisanger"];
+
+const ratePct = (n: number, total: number) => (total > 0 ? Math.round((n / total) * 1000) / 10 : 0);
+
+// Agrège par commercial : leads attribués, demandes de RDV, rappelés après leur demande, inscrits.
+// Trié par taux de conversion décroissant (le meilleur en premier).
+function buildOwnerPerf(contacts: Contact[]): OwnerPerf[] {
+  const byOwner = new Map<string, { leads: number; rdv: number; called: number; inscrits: number }>();
+  for (const c of contacts) {
+    if (!c.ownerName || EXCLUDED_OWNERS.includes(c.ownerName.toLowerCase().trim())) continue;
+    const agg = byOwner.get(c.ownerName) ?? { leads: 0, rdv: 0, called: 0, inscrits: 0 };
+    agg.leads++;
+    if (c.hasRdv) agg.rdv++;
+    if (isCalledAfterRdvRequest(c)) agg.called++;
+    if (c.isInscrit) agg.inscrits++;
+    byOwner.set(c.ownerName, agg);
+  }
+  return Array.from(byOwner, ([name, a]) => ({
+    name,
+    ...a,
+    callRate: ratePct(a.called, a.rdv),
+    conversionRate: ratePct(a.inscrits, a.leads),
+  })).sort((a, b) => b.conversionRate - a.conversionRate || b.leads - a.leads);
+}
+
+function rateColor(pct: number): string {
+  if (pct >= 50) return "#2DA131";
+  if (pct >= 20) return "#E88B00";
+  return "#DC2626";
+}
+
+function RateBadge({ value }: { value: number }) {
+  const color = rateColor(value);
+  return (
+    <span className="inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold" style={{ backgroundColor: `${color}1F`, color }}>
+      {value}%
+    </span>
+  );
+}
+
+function SalesPerformance({ contacts, inscritReady }: { contacts: Contact[]; inscritReady: boolean }) {
+  const perf = useMemo(() => buildOwnerPerf(contacts), [contacts]);
+
+  const bestConversion = perf[0] ?? null; // déjà trié par taux de conversion décroissant
+  // Uniquement les commerciaux ayant au moins une demande de RDV (sinon taux non significatif)
+  const bestCall = perf.filter((p) => p.rdv > 0).reduce<OwnerPerf | null>(
+    (best, p) => (!best || p.callRate > best.callRate || (p.callRate === best.callRate && p.rdv > best.rdv) ? p : best),
+    null
+  );
+
+  const cols = ["Commercial", "Leads attribués", "Demandes RDV", "Rappelés", "Taux de rappel", "Inscrits", "Taux de conversion"];
+  const pending = <Skel className="h-4 w-10" />;
+
+  return (
+    <div>
+      <h2 className="mb-3" style={{ color: C.text, fontSize: 15, fontWeight: 600 }}>Performance par commercial</h2>
+      <div className={`${CARD} overflow-hidden`}>
+        <div className="dash-scroll-x">
+          <table className="w-full min-w-[800px] border-collapse text-sm">
+            <thead>
+              <tr style={{ background: "#F7F4F0" }}>
+                {cols.map((label) => (
+                  <th key={label} className="px-3 py-3 text-left text-[11px] font-semibold uppercase" style={{ color: C.textSecondary, letterSpacing: "0.04em" }}>
+                    {label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {perf.map((p, i) => (
+                <tr key={p.name} style={{ background: i % 2 === 0 ? C.white : C.pageBg }}>
+                  <td className="whitespace-nowrap px-3 py-3 font-semibold" style={{ color: C.text }}>{p.name}</td>
+                  <td className="px-3 py-3" style={{ color: C.textSecondary }}>{p.leads}</td>
+                  <td className="px-3 py-3" style={{ color: C.textSecondary }}>{p.rdv}</td>
+                  <td className="px-3 py-3" style={{ color: C.textSecondary }}>{p.called}</td>
+                  <td className="px-3 py-3"><RateBadge value={p.callRate} /></td>
+                  <td className="px-3 py-3" style={{ color: C.textSecondary }}>{inscritReady ? p.inscrits : pending}</td>
+                  <td className="px-3 py-3">{inscritReady ? <RateBadge value={p.conversionRate} /> : pending}</td>
+                </tr>
+              ))}
+              {perf.length === 0 && (
+                <tr>
+                  <td colSpan={cols.length} className="px-3 py-12 text-center" style={{ color: C.muted }}>Aucun lead attribué à un commercial</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <HighlightCard
+          label="Meilleur taux de conversion"
+          loading={!inscritReady}
+          value={bestConversion ? `${bestConversion.name} · ${bestConversion.conversionRate}%` : "—"}
+          sub={bestConversion ? `${bestConversion.inscrits} inscrits sur ${bestConversion.leads} leads` : ""}
+        />
+        <HighlightCard
+          label="Meilleur taux de rappel"
+          loading={false}
+          value={bestCall ? `${bestCall.name} · ${bestCall.callRate}%` : "—"}
+          sub={bestCall ? `${bestCall.called} rappelés sur ${bestCall.rdv} demandes de RDV` : ""}
+        />
+      </div>
+    </div>
+  );
+}
+
+// Variante de KpiCard dont la valeur est un texte (nom + taux)
+function HighlightCard({ label, value, sub, loading }: { label: string; value: string; sub: string; loading: boolean }) {
+  return (
+    <div className={`${CARD} p-5`}>
+      {loading ? (
+        <>
+          <Skel className="h-7 w-48" />
+          <Skel className="mt-3 h-3 w-28" />
+          <Skel className="mt-2 h-2.5 w-24" />
+        </>
+      ) : (
+        <>
+          <div className="text-[22px] font-bold leading-tight" style={{ color: C.text }}>{value}</div>
+          <div className="mt-3 text-[13px] font-semibold uppercase" style={{ color: C.textSecondary, letterSpacing: "0.05em" }}>{label}</div>
+          {sub && <div className="mt-1 text-[12px]" style={{ color: C.muted }}>{sub}</div>}
+        </>
+      )}
     </div>
   );
 }
@@ -922,7 +1102,7 @@ function LeadsTab({ contacts, loading }: { contacts: Contact[]; loading: boolean
   return (
     <div>
       <div className={`${CARD} overflow-hidden`}>
-        <div className="overflow-x-auto">
+        <div className="dash-scroll-x">
           <table className="w-full min-w-[880px] border-collapse text-sm">
             <thead>
               <tr style={{ background: C.hover }}>
@@ -1012,6 +1192,11 @@ function RdvTab({ contacts, loading }: { contacts: Contact[]; loading: boolean }
               <Row label="Jour souhaité" value={c.rdvJour || "—"} />
               <Row label="Créneau" value={c.rdvCreneau || "—"} />
             </dl>
+            {c.rdvRequestDate && (
+              <div className="mt-1 text-right" style={{ fontSize: 12, color: C.muted }}>
+                Demande soumise le {formatRdvRequestDate(c.rdvRequestDate)}
+              </div>
+            )}
             <div className="mt-3"><CallStatusBadge contact={c} /></div>
             {c.rdvMessage && (
               <div className="mt-3 rounded-lg p-3 text-sm" style={{ background: C.pageBg, color: C.text }}>

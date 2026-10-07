@@ -35,6 +35,8 @@ export type Inscription = {
   numeroDPC: string;
 };
 
+export type CallSource = "flunter" | "aircall" | null;
+
 export type DashboardContact = {
   id: string;
   email: string;
@@ -48,7 +50,9 @@ export type DashboardContact = {
   rdvJour: string;
   rdvCreneau: string;
   rdvMessage: string;
-  lastFlunterCall: string;   // last_flunter_call_timestamp (HubSpot) - dernier appel Flunter, "" si aucun
+  rdvRequestDate: string;    // ISO - date de soumission de la demande de RDV ("Demande reçue le …"), "" si aucune
+  lastCallDate: string;      // ISO - appel le plus récent entre Flunter et Aircall, "" si aucun
+  callSource: CallSource;    // outil de l'appel le plus récent, null si aucun
   ownerName: string | null;  // commercial attribué (hubspot_owner_id résolu via l'API Owners), null si aucun
   isInscrit: boolean;
   inscriptions: Inscription[];
@@ -114,8 +118,47 @@ const HUBSPOT_PROPERTIES = [
   "certification_simulateur_date",
   "createdate",
   "last_flunter_call_timestamp",
+  "aircall_last_call_at",
   "hubspot_owner_id",
 ];
+
+// ─── Contacts internes Médéré (tests) ───────────────────────────────────────────
+// Exclus AVANT tout calcul : tableaux, KPIs, graphiques, performance commerciale.
+// Pour exclure un nouveau testeur interne, ajouter son email, son domaine ou son nom complet ici.
+
+const EXCLUDED_EMAILS = [
+  "dethie@medere.fr",
+  "dethie+test-simulateur@medere.fr",
+  "faye.dethi@ugb.edu.sn",
+  "arnaud@medere.fr",
+  "noemie@medere.fr",
+  "harrysitbon26@gmail.com",
+  // Comptes de test
+  "test@gmail.com",
+  "lavieestbelle@tech.fr",
+  "bestlife@tech.fr",
+];
+
+// Domaines internes : tout email de ces domaines est exclu (ex : harouna@medere.fr)
+const EXCLUDED_DOMAINS = ["medere.fr"];
+
+// Contacts internes identifiés par leur nom complet (prénom + nom HubSpot, match exact)
+const EXCLUDED_NAMES = [
+  "harry",
+];
+
+const EXCLUDED_EMAIL_SET = new Set(EXCLUDED_EMAILS.map((e) => e.toLowerCase()));
+const EXCLUDED_NAME_SET = new Set(EXCLUDED_NAMES.map((n) => n.toLowerCase()));
+
+function isInternalContact(c: { email: string; name: string }): boolean {
+  const email = c.email.toLowerCase().trim();
+  const domain = email.split("@")[1] ?? "";
+  return (
+    EXCLUDED_EMAIL_SET.has(email) ||
+    EXCLUDED_DOMAINS.includes(domain) ||
+    EXCLUDED_NAME_SET.has(c.name.toLowerCase().replace(/\s+/g, " ").trim())
+  );
+}
 
 // ─── Date de référence du simulateur ───────────────────────────────────────────
 // Date à partir de laquelle une inscription est attribuée au simulateur.
@@ -129,15 +172,18 @@ const MOIS_MAP: Record<string, string> = {
   juillet: "07", août: "08", septembre: "09", octobre: "10", novembre: "11", décembre: "12",
 };
 
-// Extrait la date de la ligne "Demande reçue le DD mois YYYY" du texte de RDV.
+// Extrait la date (et l'heure) de la ligne "Demande reçue le DD mois YYYY à HHhMM" du texte de RDV.
 // Le bloc lettres accepte les accents (février, août, décembre).
+// L'heure est écrite par /api/rdv via getHours() côté serveur (UTC sur Vercel) → suffixe Z.
+// Ancien format sans heure → minuit.
 function extractRdvReceivedDate(rdvText: string): string | null {
-  const match = rdvText.match(/Demande reçue le (\d{1,2}) ([A-Za-zÀ-ÿ]+) (\d{4})/);
+  const match = rdvText.match(/Demande reçue le (\d{1,2}) ([A-Za-zÀ-ÿ]+) (\d{4})(?: à (\d{1,2})h(\d{2}))?/);
   if (!match) return null;
-  const [, day, monthStr, year] = match;
+  const [, day, monthStr, year, hours, minutes] = match;
   const month = MOIS_MAP[monthStr.toLowerCase()];
   if (!month) return null;
-  return `${year}-${month}-${day.padStart(2, "0")}T00:00:00.000Z`;
+  const time = hours && minutes ? `${hours.padStart(2, "0")}:${minutes}` : "00:00";
+  return `${year}-${month}-${day.padStart(2, "0")}T${time}:00.000Z`;
 }
 
 // Date de référence par ordre de priorité :
@@ -157,6 +203,38 @@ function getSimulateurDate(p: {
     if (rdvDate) return rdvDate;
   }
   return SIMULATEUR_LAUNCH;
+}
+
+// Timestamp d'appel HubSpot : ISO ou timestamp ms selon la propriété
+function parseCallDate(raw: string | null | undefined): Date | null {
+  if (!raw) return null;
+  const t = /^\d+$/.test(raw) ? Number(raw) : Date.parse(raw);
+  return isNaN(t) ? null : new Date(t);
+}
+
+// Dernier rappel : date la plus récente entre Flunter et Aircall
+// (certains commerciaux utilisaient Aircall avant de migrer sur Flunter).
+function getLastCall(p: {
+  last_flunter_call_timestamp?: string | null;
+  aircall_last_call_at?: string | null;
+}): { lastCallDate: string; callSource: CallSource } {
+  const flunterDate = parseCallDate(p.last_flunter_call_timestamp);
+  const aircallDate = parseCallDate(p.aircall_last_call_at);
+
+  let lastCallDate: Date | null = null;
+  let callSource: CallSource = null;
+  if (flunterDate && aircallDate) {
+    const flunterWins = flunterDate > aircallDate;
+    lastCallDate = flunterWins ? flunterDate : aircallDate;
+    callSource = flunterWins ? "flunter" : "aircall";
+  } else if (flunterDate) {
+    lastCallDate = flunterDate;
+    callSource = "flunter";
+  } else if (aircallDate) {
+    lastCallDate = aircallDate;
+    callSource = "aircall";
+  }
+  return { lastCallDate: lastCallDate ? lastCallDate.toISOString() : "", callSource };
 }
 
 // Résout les owners HubSpot (commerciaux) : ownerId → "Prénom Nom".
@@ -262,7 +340,8 @@ export async function fetchAllHubSpotContacts(): Promise<DashboardContact[]> {
         rdvJour: p.certification_rdv_jour ?? "",
         rdvCreneau: p.certification_rdv_creneau ?? "",
         rdvMessage: p.certification_rdv_message ?? "",
-        lastFlunterCall: p.last_flunter_call_timestamp ?? "",
+        rdvRequestDate: extractRdvReceivedDate(rdvDemande) ?? "",
+        ...getLastCall(p),
         ownerName: null,
         isInscrit: false,
         inscriptions: [],
@@ -279,7 +358,8 @@ export async function fetchAllHubSpotContacts(): Promise<DashboardContact[]> {
     c.ownerName = (ownerId && ownerMap.get(ownerId)) || null;
   }
 
-  return contacts;
+  // Exclusion des contacts internes avant toute stat (buildStats, croisement Airtable, UI)
+  return contacts.filter((c) => !isInternalContact(c));
 }
 
 // ─── Airtable : table Inscriptions ──────────────────────────────────────────────
