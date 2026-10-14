@@ -26,7 +26,7 @@ const FIELD_IDS = {
 // Noms de colonnes lisibles (pour filterByFormula - la syntaxe Airtable l'exige)
 const COL = {
   professions: "Public concerné",
-  blocAxe:     "Bloc/Axe certification",
+  blocAxe:     "Blocs Certification",
   statut:      "Statut de la formation",
 } as const;
 
@@ -93,7 +93,7 @@ const FIELD_NAMES = {
   indemnisation: "Indemnisation",
   professions:   "Public concerné",
   statut:        "Statut de la formation",
-  blocAxe:       "Bloc/Axe certification",
+  blocAxe:       "Blocs Certification",
   numeroDPC:     "Numéro DPC",
 } as const;
 
